@@ -18,20 +18,11 @@ scenes:
         - "#2B8CD6"
         - "#A9E7FF"
     phone:
+      model: iphone_16_pro
       x: 170
       y: 430
       width: 950
       height: 1980
-      corner_radius: 96
-      frame_color: "#11151B"
-      frame_border_width: 10
-      screen_padding:
-        top: 34
-        right: 24
-        bottom: 34
-        left: 24
-      shadow_offset_y: 20
-      shadow_alpha: 76
     copy:
       headline: "BUILD FOCUS FAST"
       subheadline: "One clean flow for capture, layout, and export."
@@ -59,20 +50,13 @@ scenes:
         - "#37C4AA"
         - "#D0FFF1"
     phone:
+      model: iphone_17_pro
       x: 170
       y: 430
       width: 950
       height: 1980
-      corner_radius: 96
-      frame_color: "#0F1217"
-      frame_border_width: 10
-      screen_padding:
-        top: 34
-        right: 24
-        bottom: 34
-        left: 24
-      shadow_offset_y: 20
-      shadow_alpha: 76
+      # Optional: provide a transparent PNG for exact hardware chrome.
+      # overlay: ./assets/frames/iphone_17_pro_overlay.png
     copy:
       headline: "SHIP STORE SHOTS"
       subheadline: "Deterministic themes with seeded background variants."

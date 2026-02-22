@@ -51,7 +51,7 @@ pub fn run(config_path: &Path) -> Result<RunSummary> {
             .with_context(|| format!("failed opening raw screenshot {}", raw_path.display()))?;
         let background =
             render_background(&scene.background, scene.output.width, scene.output.height)?;
-        let final_img = compose_scene(&raw_img, scene, background)?;
+        let final_img = compose_scene(&raw_img, scene, background, &config_dir)?;
 
         let final_path = final_dir.join(&scene.output.filename);
         final_img

@@ -21,4 +21,6 @@ pub enum Commands {
         #[arg(short, long, default_value = "screenforge.yaml")]
         config: PathBuf,
     },
+    /// List built-in phone model presets
+    Devices,
 }

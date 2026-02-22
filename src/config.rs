@@ -32,6 +32,14 @@ pub struct SceneConfig {
     pub copy: Option<CopyConfig>,
 }
 
+#[derive(Debug, Deserialize, Clone, Copy)]
+pub enum PhoneModel {
+    #[serde(rename = "iphone_16_pro")]
+    Iphone16Pro,
+    #[serde(rename = "iphone_17_pro")]
+    Iphone17Pro,
+}
+
 #[derive(Debug, Deserialize)]
 #[serde(tag = "adapter", rename_all = "snake_case")]
 pub enum CaptureConfig {
@@ -72,6 +80,8 @@ pub enum BackgroundTemplate {
 
 #[derive(Debug, Deserialize)]
 pub struct PhoneConfig {
+    #[serde(default)]
+    pub model: Option<PhoneModel>,
     pub x: u32,
     pub y: u32,
     pub width: u32,
@@ -88,6 +98,8 @@ pub struct PhoneConfig {
     pub shadow_offset_y: i32,
     #[serde(default = "default_shadow_alpha")]
     pub shadow_alpha: u8,
+    #[serde(default)]
+    pub overlay: Option<PathBuf>,
 }
 
 #[derive(Debug, Deserialize, Clone, Copy)]

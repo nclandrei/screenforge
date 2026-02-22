@@ -4,6 +4,7 @@ mod cli;
 mod color;
 mod compose;
 mod config;
+mod devices;
 mod pipeline;
 mod preview;
 
@@ -23,6 +24,12 @@ fn main() -> Result<()> {
                 summary.output_dir.display()
             );
             println!("Preview: {}", summary.preview_path.display());
+        }
+        Commands::Devices => {
+            println!("Built-in phone models:");
+            for device in &devices::DEVICE_LISTINGS {
+                println!("  - {} ({})", device.slug, device.display_name);
+            }
         }
     }
 

@@ -1,36 +1,41 @@
-use anyhow::{Result, bail};
+use std::path::Path;
+
+use anyhow::{Context, Result, bail};
 use font8x8::{BASIC_FONTS, UnicodeFonts};
 use image::imageops::{FilterType, crop_imm};
 use image::{DynamicImage, GenericImageView, Rgba, RgbaImage};
 
 use crate::color::parse_hex_rgba;
 use crate::config::{CopyConfig, SceneConfig};
+use crate::devices::{DynamicIslandSpec, resolve_phone_style};
 
 pub fn compose_scene(
     screenshot: &DynamicImage,
     scene: &SceneConfig,
     mut background: RgbaImage,
+    config_dir: &Path,
 ) -> Result<RgbaImage> {
     if let Some(copy) = &scene.copy {
         draw_copy(&mut background, copy)?;
     }
 
-    let frame_color = parse_hex_rgba(&scene.phone.frame_color)?;
     let phone = &scene.phone;
-
     if phone.width == 0 || phone.height == 0 {
         bail!("scene '{}' has invalid phone size", scene.id);
     }
 
-    let shadow_y = phone.y as i32 + phone.shadow_offset_y;
+    let style = resolve_phone_style(phone);
+    let frame_color = parse_hex_rgba(&style.frame_color)?;
+
+    let shadow_y = phone.y as i32 + style.shadow_offset_y;
     fill_rounded_rect(
         &mut background,
         phone.x as i32,
         shadow_y,
         phone.width,
         phone.height,
-        phone.corner_radius,
-        Rgba([0, 0, 0, phone.shadow_alpha]),
+        style.corner_radius,
+        Rgba([0, 0, 0, style.shadow_alpha]),
     );
 
     fill_rounded_rect(
@@ -39,26 +44,34 @@ pub fn compose_scene(
         phone.y as i32,
         phone.width,
         phone.height,
-        phone.corner_radius,
+        style.corner_radius,
         frame_color,
     );
+    draw_frame_tones(
+        &mut background,
+        phone.x as i32,
+        phone.y as i32,
+        phone.width,
+        phone.height,
+        style.corner_radius,
+    );
 
-    let inset_left = phone
+    let inset_left = style
         .screen_padding
         .left
-        .saturating_add(phone.frame_border_width);
-    let inset_right = phone
+        .saturating_add(style.frame_border_width);
+    let inset_right = style
         .screen_padding
         .right
-        .saturating_add(phone.frame_border_width);
-    let inset_top = phone
+        .saturating_add(style.frame_border_width);
+    let inset_top = style
         .screen_padding
         .top
-        .saturating_add(phone.frame_border_width);
-    let inset_bottom = phone
+        .saturating_add(style.frame_border_width);
+    let inset_bottom = style
         .screen_padding
         .bottom
-        .saturating_add(phone.frame_border_width);
+        .saturating_add(style.frame_border_width);
 
     let screen_w = phone
         .width
@@ -76,9 +89,9 @@ pub fn compose_scene(
 
     let screen_x = phone.x.saturating_add(inset_left);
     let screen_y = phone.y.saturating_add(inset_top);
-    let screenshot_radius = phone
+    let screenshot_radius = style
         .corner_radius
-        .saturating_sub(phone.frame_border_width + 2);
+        .saturating_sub(style.frame_border_width + 2);
     let fitted = resize_cover(screenshot, screen_w, screen_h);
     blit_rounded(
         &mut background,
@@ -87,6 +100,36 @@ pub fn compose_scene(
         screen_y as i32,
         screenshot_radius,
     );
+
+    if let Some(island) = style.island {
+        draw_dynamic_island(
+            &mut background,
+            screen_x as i32,
+            screen_y as i32,
+            screen_w,
+            screen_h,
+            island,
+        );
+    }
+
+    if let Some(overlay_path) = &phone.overlay {
+        let path = resolve_path(config_dir, overlay_path);
+        apply_phone_overlay(
+            &mut background,
+            &path,
+            phone.x as i32,
+            phone.y as i32,
+            phone.width,
+            phone.height,
+        )
+        .with_context(|| {
+            format!(
+                "scene '{}' failed applying phone overlay {}",
+                scene.id,
+                path.display()
+            )
+        })?;
+    }
 
     Ok(background)
 }
@@ -230,6 +273,115 @@ fn resize_cover(source: &DynamicImage, target_w: u32, target_h: u32) -> RgbaImag
     crop_imm(&resized, crop_x, crop_y, target_w, target_h).to_image()
 }
 
+fn draw_frame_tones(image: &mut RgbaImage, x: i32, y: i32, width: u32, height: u32, radius: u32) {
+    let top_h = (height / 3).max(8);
+    fill_rounded_rect(
+        image,
+        x + 1,
+        y + 1,
+        width.saturating_sub(2),
+        top_h,
+        radius.saturating_sub(1),
+        Rgba([255, 255, 255, 20]),
+    );
+
+    let bottom_y = y + ((height as i32 * 2) / 3);
+    let bottom_h = height.saturating_sub((height * 2) / 3).saturating_sub(2);
+    fill_rounded_rect(
+        image,
+        x + 1,
+        bottom_y,
+        width.saturating_sub(2),
+        bottom_h,
+        radius.saturating_sub(1),
+        Rgba([0, 0, 0, 28]),
+    );
+}
+
+fn draw_dynamic_island(
+    image: &mut RgbaImage,
+    screen_x: i32,
+    screen_y: i32,
+    screen_w: u32,
+    screen_h: u32,
+    spec: DynamicIslandSpec,
+) {
+    let island_w = ((screen_w as f32 * spec.width_ratio).round() as u32)
+        .max(48)
+        .min(screen_w.saturating_sub(4));
+    let island_h = ((screen_h as f32 * spec.height_ratio).round() as u32)
+        .max(18)
+        .min(screen_h.saturating_sub(2));
+    let island_x = screen_x + ((screen_w.saturating_sub(island_w) / 2) as i32);
+    let island_y = screen_y + ((screen_h as f32 * spec.y_offset_ratio).round() as i32);
+
+    fill_rounded_rect(
+        image,
+        island_x,
+        island_y,
+        island_w,
+        island_h,
+        island_h / 2,
+        Rgba([0, 0, 0, 255]),
+    );
+    fill_rounded_rect(
+        image,
+        island_x + 1,
+        island_y + 1,
+        island_w.saturating_sub(2),
+        island_h.saturating_sub(2),
+        island_h / 2,
+        Rgba([8, 8, 9, 255]),
+    );
+
+    let lens_size = ((island_h as f32 * spec.lens_size_ratio).round() as u32)
+        .max(4)
+        .min(island_h.saturating_sub(4));
+    let lens_x = island_x + island_w as i32 - lens_size as i32 - (island_h as i32 / 3);
+    let lens_y = island_y + (island_h.saturating_sub(lens_size) / 2) as i32;
+    let lens_r = (lens_size / 2) as i32;
+    fill_circle(
+        image,
+        lens_x + lens_r,
+        lens_y + lens_r,
+        lens_r,
+        Rgba([20, 32, 45, 210]),
+    );
+    fill_circle(
+        image,
+        lens_x + lens_r / 2,
+        lens_y + lens_r / 2,
+        (lens_r / 3).max(1),
+        Rgba([90, 136, 180, 120]),
+    );
+}
+
+fn apply_phone_overlay(
+    image: &mut RgbaImage,
+    overlay_path: &Path,
+    x: i32,
+    y: i32,
+    width: u32,
+    height: u32,
+) -> Result<()> {
+    let overlay = image::open(overlay_path)
+        .with_context(|| format!("failed opening overlay {}", overlay_path.display()))?
+        .resize_exact(width, height, FilterType::Lanczos3)
+        .to_rgba8();
+
+    for yy in 0..overlay.height() as i32 {
+        for xx in 0..overlay.width() as i32 {
+            let pixel = overlay.get_pixel(xx as u32, yy as u32);
+            if pixel[3] == 0 {
+                continue;
+            }
+            blend_pixel(image, x + xx, y + yy, *pixel);
+        }
+    }
+
+    Ok(())
+}
+
 fn fill_rounded_rect(
     image: &mut RgbaImage,
     x: i32,
@@ -262,6 +414,23 @@ fn blit_rounded(image: &mut RgbaImage, src: &RgbaImage, x: i32, y: i32, radius: 
             }
             let pixel = src.get_pixel(xx as u32, yy as u32);
             blend_pixel(image, x + xx, y + yy, *pixel);
+        }
+    }
+}
+
+fn fill_circle(image: &mut RgbaImage, cx: i32, cy: i32, radius: i32, color: Rgba<u8>) {
+    if radius <= 0 {
+        return;
+    }
+
+    let r2 = radius * radius;
+    for y in (cy - radius)..=(cy + radius) {
+        for x in (cx - radius)..=(cx + radius) {
+            let dx = x - cx;
+            let dy = y - cy;
+            if dx * dx + dy * dy <= r2 {
+                blend_pixel(image, x, y, color);
+            }
         }
     }
 }
@@ -311,4 +480,12 @@ fn blend_pixel(image: &mut RgbaImage, x: i32, y: i32, src: Rgba<u8>) {
         255,
     ]);
     image.put_pixel(x, y, out);
+}
+
+fn resolve_path(config_dir: &Path, path: &Path) -> std::path::PathBuf {
+    if path.is_absolute() {
+        path.to_path_buf()
+    } else {
+        config_dir.join(path)
+    }
 }

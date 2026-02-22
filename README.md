@@ -9,7 +9,10 @@ A Rust CLI MVP for generating App Store-style screenshots from config.
   - `file` adapter (ingest an existing image)
   - `simctl` adapter (run `xcrun simctl io <device> screenshot`)
 - Renders deterministic backgrounds (`mesh`, `stripes`) with seeded variation
-- Composes a phone mockup (rounded frame + screenshot + text)
+- Composes phone mockups with built-in device presets:
+  - `iphone_16_pro`
+  - `iphone_17_pro`
+- Supports optional transparent PNG overlays for exact hardware chrome
 - Writes outputs and an `index.html` preview
 
 ## Quick start
@@ -22,6 +25,12 @@ Open preview:
 
 ```bash
 open ./output/index.html
+```
+
+List supported built-in devices:
+
+```bash
+cargo run -- devices
 ```
 
 ## Config shape
@@ -42,16 +51,13 @@ scenes:
       seed: 42
       colors: ["#0B1022", "#16479A", "#2B8CD6", "#A9E7FF"]
     phone:
+      model: iphone_16_pro # iphone_16_pro | iphone_17_pro
       x: 170
       y: 430
       width: 950
       height: 1980
-      corner_radius: 96
-      frame_color: "#11151B"
-      frame_border_width: 10
-      screen_padding: { top: 34, right: 24, bottom: 34, left: 24 }
-      shadow_offset_y: 20
-      shadow_alpha: 76
+      # Optional high-fidelity transparent overlay frame.
+      # overlay: ./assets/frames/iphone_16_pro_overlay.png
     copy:
       headline: "BUILD FOCUS FAST"
       subheadline: "One clean flow for capture, layout, and export."
@@ -76,9 +82,14 @@ Notes:
 - `device` can be `booted` or a simulator UDID.
 - MVP assumes the app is already on the desired screen before capture.
 
+## Frame Strategy
+
+- Use built-in model presets for fast output (`model: iphone_16_pro` or `model: iphone_17_pro`).
+- For exact industrial design, export a transparent overlay PNG from your frame source and set `phone.overlay`.
+- Overlay image is resized to `phone.width` x `phone.height` and blended on top of the generated phone.
+
 ## Next MVP extensions
 
-- Device packs with per-device screen cutout metadata
 - Better typography (custom fonts, kerning, multiline layout)
 - Localization matrix support and per-locale text overrides
 - Deterministic scene state hooks for launch/openurl/fixture setup
