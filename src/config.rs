@@ -1,0 +1,194 @@
+use std::fs;
+use std::path::{Path, PathBuf};
+
+use anyhow::{Context, Result};
+use serde::Deserialize;
+
+#[derive(Debug, Deserialize)]
+pub struct Config {
+    #[serde(default = "default_output_dir")]
+    pub output_dir: PathBuf,
+    pub scenes: Vec<SceneConfig>,
+}
+
+impl Config {
+    pub fn from_path(path: &Path) -> Result<Self> {
+        let raw = fs::read_to_string(path)
+            .with_context(|| format!("failed to read config file: {}", path.display()))?;
+        let parsed: Self = serde_yaml::from_str(&raw)
+            .with_context(|| format!("failed to parse yaml: {}", path.display()))?;
+        Ok(parsed)
+    }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct SceneConfig {
+    pub id: String,
+    pub capture: CaptureConfig,
+    pub output: OutputConfig,
+    pub background: BackgroundConfig,
+    pub phone: PhoneConfig,
+    #[serde(default)]
+    pub copy: Option<CopyConfig>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(tag = "adapter", rename_all = "snake_case")]
+pub enum CaptureConfig {
+    File {
+        path: PathBuf,
+    },
+    Simctl {
+        device: String,
+        #[serde(default = "default_settle_ms")]
+        settle_ms: u64,
+    },
+}
+
+#[derive(Debug, Deserialize)]
+pub struct OutputConfig {
+    pub filename: String,
+    pub width: u32,
+    pub height: u32,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct BackgroundConfig {
+    #[serde(default)]
+    pub template: BackgroundTemplate,
+    #[serde(default = "default_seed")]
+    pub seed: u64,
+    #[serde(default = "default_palette")]
+    pub colors: Vec<String>,
+}
+
+#[derive(Debug, Deserialize, Clone, Copy, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum BackgroundTemplate {
+    #[default]
+    Mesh,
+    Stripes,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct PhoneConfig {
+    pub x: u32,
+    pub y: u32,
+    pub width: u32,
+    pub height: u32,
+    #[serde(default = "default_corner_radius")]
+    pub corner_radius: u32,
+    #[serde(default)]
+    pub screen_padding: Insets,
+    #[serde(default = "default_frame_color")]
+    pub frame_color: String,
+    #[serde(default = "default_frame_border_width")]
+    pub frame_border_width: u32,
+    #[serde(default = "default_shadow_offset_y")]
+    pub shadow_offset_y: i32,
+    #[serde(default = "default_shadow_alpha")]
+    pub shadow_alpha: u8,
+}
+
+#[derive(Debug, Deserialize, Clone, Copy)]
+pub struct Insets {
+    pub top: u32,
+    pub right: u32,
+    pub bottom: u32,
+    pub left: u32,
+}
+
+impl Default for Insets {
+    fn default() -> Self {
+        Self {
+            top: 28,
+            right: 20,
+            bottom: 28,
+            left: 20,
+        }
+    }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct CopyConfig {
+    pub headline: String,
+    #[serde(default)]
+    pub subheadline: String,
+    #[serde(default = "default_copy_color")]
+    pub color: String,
+    #[serde(default = "default_copy_x")]
+    pub x: u32,
+    #[serde(default = "default_copy_y")]
+    pub y: u32,
+    #[serde(default = "default_headline_scale")]
+    pub headline_scale: u32,
+    #[serde(default = "default_subheadline_scale")]
+    pub subheadline_scale: u32,
+    #[serde(default = "default_line_gap")]
+    pub line_gap: u32,
+}
+
+fn default_output_dir() -> PathBuf {
+    PathBuf::from("./output")
+}
+
+fn default_seed() -> u64 {
+    1
+}
+
+fn default_palette() -> Vec<String> {
+    vec![
+        "#0E1228".to_string(),
+        "#1348A5".to_string(),
+        "#2B8CD6".to_string(),
+        "#C2E6FF".to_string(),
+    ]
+}
+
+fn default_settle_ms() -> u64 {
+    800
+}
+
+fn default_corner_radius() -> u32 {
+    88
+}
+
+fn default_frame_color() -> String {
+    "#11151B".to_string()
+}
+
+fn default_frame_border_width() -> u32 {
+    8
+}
+
+fn default_shadow_offset_y() -> i32 {
+    18
+}
+
+fn default_shadow_alpha() -> u8 {
+    74
+}
+
+fn default_copy_color() -> String {
+    "#F4F8FF".to_string()
+}
+
+fn default_copy_x() -> u32 {
+    84
+}
+
+fn default_copy_y() -> u32 {
+    98
+}
+
+fn default_headline_scale() -> u32 {
+    6
+}
+
+fn default_subheadline_scale() -> u32 {
+    3
+}
+
+fn default_line_gap() -> u32 {
+    16
+}

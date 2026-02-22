@@ -1,0 +1,84 @@
+output_dir: ./output
+
+scenes:
+  - id: demo_mesh
+    capture:
+      adapter: file
+      path: ./examples/input/demo.ppm
+    output:
+      filename: 01-demo-mesh.png
+      width: 1290
+      height: 2796
+    background:
+      template: mesh
+      seed: 42
+      colors:
+        - "#0B1022"
+        - "#16479A"
+        - "#2B8CD6"
+        - "#A9E7FF"
+    phone:
+      x: 170
+      y: 430
+      width: 950
+      height: 1980
+      corner_radius: 96
+      frame_color: "#11151B"
+      frame_border_width: 10
+      screen_padding:
+        top: 34
+        right: 24
+        bottom: 34
+        left: 24
+      shadow_offset_y: 20
+      shadow_alpha: 76
+    copy:
+      headline: "BUILD FOCUS FAST"
+      subheadline: "One clean flow for capture, layout, and export."
+      color: "#F4F8FF"
+      x: 86
+      y: 94
+      headline_scale: 7
+      subheadline_scale: 3
+      line_gap: 14
+
+  - id: demo_stripes
+    capture:
+      adapter: file
+      path: ./examples/input/demo.ppm
+    output:
+      filename: 02-demo-stripes.png
+      width: 1290
+      height: 2796
+    background:
+      template: stripes
+      seed: 99
+      colors:
+        - "#04172B"
+        - "#0773B8"
+        - "#37C4AA"
+        - "#D0FFF1"
+    phone:
+      x: 170
+      y: 430
+      width: 950
+      height: 1980
+      corner_radius: 96
+      frame_color: "#0F1217"
+      frame_border_width: 10
+      screen_padding:
+        top: 34
+        right: 24
+        bottom: 34
+        left: 24
+      shadow_offset_y: 20
+      shadow_alpha: 76
+    copy:
+      headline: "SHIP STORE SHOTS"
+      subheadline: "Deterministic themes with seeded background variants."
+      color: "#E9FFF7"
+      x: 86
+      y: 94
+      headline_scale: 7
+      subheadline_scale: 3
+      line_gap: 14
