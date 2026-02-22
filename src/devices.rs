@@ -45,14 +45,22 @@ pub struct DeviceListing {
     pub display_name: &'static str,
 }
 
-pub const DEVICE_LISTINGS: [DeviceListing; 2] = [
+pub const DEVICE_LISTINGS: [DeviceListing; 4] = [
     DeviceListing {
         slug: "iphone_16_pro",
         display_name: "iPhone 16 Pro",
     },
     DeviceListing {
+        slug: "iphone_16_pro_max",
+        display_name: "iPhone 16 Pro Max",
+    },
+    DeviceListing {
         slug: "iphone_17_pro",
         display_name: "iPhone 17 Pro",
+    },
+    DeviceListing {
+        slug: "iphone_17_pro_max",
+        display_name: "iPhone 17 Pro Max",
     },
 ];
 
@@ -120,6 +128,25 @@ fn profile_for(model: PhoneModel) -> DeviceProfile {
                 lens_size_ratio: 0.38,
             }),
         },
+        PhoneModel::Iphone16ProMax => DeviceProfile {
+            corner_radius: 126,
+            screen_padding: Insets {
+                top: 54,
+                right: 30,
+                bottom: 42,
+                left: 30,
+            },
+            frame_color: "#767C86",
+            frame_border_width: 14,
+            shadow_offset_y: 25,
+            shadow_alpha: 83,
+            island: Some(DynamicIslandSpec {
+                width_ratio: 0.30,
+                height_ratio: 0.047,
+                y_offset_ratio: 0.020,
+                lens_size_ratio: 0.37,
+            }),
+        },
         PhoneModel::Iphone17Pro => DeviceProfile {
             corner_radius: 122,
             screen_padding: Insets {
@@ -137,6 +164,25 @@ fn profile_for(model: PhoneModel) -> DeviceProfile {
                 height_ratio: 0.046,
                 y_offset_ratio: 0.020,
                 lens_size_ratio: 0.36,
+            }),
+        },
+        PhoneModel::Iphone17ProMax => DeviceProfile {
+            corner_radius: 130,
+            screen_padding: Insets {
+                top: 56,
+                right: 30,
+                bottom: 42,
+                left: 30,
+            },
+            frame_color: "#666D76",
+            frame_border_width: 15,
+            shadow_offset_y: 26,
+            shadow_alpha: 85,
+            island: Some(DynamicIslandSpec {
+                width_ratio: 0.29,
+                height_ratio: 0.044,
+                y_offset_ratio: 0.020,
+                lens_size_ratio: 0.35,
             }),
         },
     }

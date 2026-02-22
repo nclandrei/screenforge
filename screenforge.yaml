@@ -50,7 +50,7 @@ scenes:
         - "#37C4AA"
         - "#D0FFF1"
     phone:
-      model: iphone_17_pro
+      model: iphone_17_pro_max
       x: 170
       y: 430
       width: 950

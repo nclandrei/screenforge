@@ -11,7 +11,9 @@ A Rust CLI MVP for generating App Store-style screenshots from config.
 - Renders deterministic backgrounds (`mesh`, `stripes`) with seeded variation
 - Composes phone mockups with built-in device presets:
   - `iphone_16_pro`
+  - `iphone_16_pro_max`
   - `iphone_17_pro`
+  - `iphone_17_pro_max`
 - Supports optional transparent PNG overlays for exact hardware chrome
 - Writes outputs and an `index.html` preview
 
@@ -51,7 +53,7 @@ scenes:
       seed: 42
       colors: ["#0B1022", "#16479A", "#2B8CD6", "#A9E7FF"]
     phone:
-      model: iphone_16_pro # iphone_16_pro | iphone_17_pro
+      model: iphone_16_pro # iphone_16_pro | iphone_16_pro_max | iphone_17_pro | iphone_17_pro_max
       x: 170
       y: 430
       width: 950
@@ -85,6 +87,7 @@ Notes:
 ## Frame Strategy
 
 - Use built-in model presets for fast output (`model: iphone_16_pro` or `model: iphone_17_pro`).
+- Available built-in models: `iphone_16_pro`, `iphone_16_pro_max`, `iphone_17_pro`, `iphone_17_pro_max`.
 - For exact industrial design, export a transparent overlay PNG from your frame source and set `phone.overlay`.
 - Overlay image is resized to `phone.width` x `phone.height` and blended on top of the generated phone.
 
