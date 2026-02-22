@@ -23,4 +23,25 @@ pub enum Commands {
     },
     /// List built-in phone model presets
     Devices,
+    /// Import transparent PNG frame overlays into assets/frames
+    ImportFrames {
+        /// Source directory containing PNG frame files
+        #[arg(short, long)]
+        source: PathBuf,
+        /// Destination directory for normalized overlays
+        #[arg(long, default_value = "assets/frames")]
+        dest: PathBuf,
+        /// Overwrite destination overlays if they already exist
+        #[arg(long, default_value_t = false)]
+        overwrite: bool,
+    },
+    /// Validate overlay files referenced by config scenes
+    VerifyOverlay {
+        /// Path to YAML config
+        #[arg(short, long, default_value = "screenforge.yaml")]
+        config: PathBuf,
+        /// Treat warnings as failures
+        #[arg(long, default_value_t = false)]
+        strict: bool,
+    },
 }

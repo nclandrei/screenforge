@@ -33,6 +33,24 @@ List supported built-in devices:
 cargo run -- devices
 ```
 
+Import frame overlays into `assets/frames`:
+
+```bash
+cargo run -- import-frames --source ~/Downloads/phone-frames
+```
+
+Validate overlays used by your config:
+
+```bash
+cargo run -- verify-overlay --config ./screenforge.yaml
+```
+
+Use strict validation (warnings fail CI):
+
+```bash
+cargo run -- verify-overlay --config ./screenforge.yaml --strict
+```
+
 ## Config shape
 
 ```yaml
@@ -85,8 +103,14 @@ Notes:
 ## Frame Strategy
 
 - Use built-in model presets for fast output (`model: iphone_16_pro` or `model: iphone_17_pro`).
-- For exact industrial design, export a transparent overlay PNG from your frame source and set `phone.overlay`.
-- Overlay image is resized to `phone.width` x `phone.height` and blended on top of the generated phone.
+- For exact industrial design, import transparent frame PNGs with `import-frames`.
+- Imported files are normalized into `assets/frames/<slug>.png`.
+- If `phone.overlay` is not set, compose auto-loads `assets/frames/<model>.png` when available.
+- `verify-overlay` checks:
+  - overlay file exists
+  - overlay decodes correctly
+  - overlay has transparent pixels
+  - overlay dimensions match `phone.width`/`phone.height` (warning unless `--strict`)
 
 ## Next MVP extensions
 
