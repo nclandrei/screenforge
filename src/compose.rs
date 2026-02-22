@@ -8,6 +8,7 @@ use image::{DynamicImage, GenericImageView, Rgba, RgbaImage};
 use crate::color::parse_hex_rgba;
 use crate::config::{CopyConfig, SceneConfig};
 use crate::devices::{DynamicIslandSpec, resolve_phone_style};
+use crate::frames::resolve_overlay_for_compose;
 
 pub fn compose_scene(
     screenshot: &DynamicImage,
@@ -112,11 +113,10 @@ pub fn compose_scene(
         );
     }
 
-    if let Some(overlay_path) = &phone.overlay {
-        let path = resolve_path(config_dir, overlay_path);
+    if let Some(overlay) = resolve_overlay_for_compose(scene, config_dir) {
         apply_phone_overlay(
             &mut background,
-            &path,
+            &overlay.path,
             phone.x as i32,
             phone.y as i32,
             phone.width,
@@ -124,9 +124,10 @@ pub fn compose_scene(
         )
         .with_context(|| {
             format!(
-                "scene '{}' failed applying phone overlay {}",
+                "scene '{}' failed applying {} overlay {}",
                 scene.id,
-                path.display()
+                overlay.source.label(),
+                overlay.path.display()
             )
         })?;
     }
@@ -480,12 +481,4 @@ fn blend_pixel(image: &mut RgbaImage, x: i32, y: i32, src: Rgba<u8>) {
         255,
     ]);
     image.put_pixel(x, y, out);
-}
-
-fn resolve_path(config_dir: &Path, path: &Path) -> std::path::PathBuf {
-    if path.is_absolute() {
-        path.to_path_buf()
-    } else {
-        config_dir.join(path)
-    }
 }

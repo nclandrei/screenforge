@@ -23,6 +23,9 @@ scenes:
       y: 430
       width: 950
       height: 1980
+      # Optional explicit path. If omitted, Screenforge tries:
+      # ./assets/frames/iphone_16_pro.png
+      # overlay: ./assets/frames/iphone_16_pro.png
     copy:
       headline: "BUILD FOCUS FAST"
       subheadline: "One clean flow for capture, layout, and export."
@@ -56,7 +59,7 @@ scenes:
       width: 950
       height: 1980
       # Optional: provide a transparent PNG for exact hardware chrome.
-      # overlay: ./assets/frames/iphone_17_pro_overlay.png
+      # overlay: ./assets/frames/iphone_17_pro.png
     copy:
       headline: "SHIP STORE SHOTS"
       subheadline: "Deterministic themes with seeded background variants."
