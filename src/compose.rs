@@ -248,7 +248,7 @@ fn draw_bitmap_text(
 
                 for dy in 0..scale {
                     for dx in 0..scale {
-                        let px = cursor_x + ((7 - col) as i32 * scale as i32) + dx as i32;
+                        let px = cursor_x + (col as i32 * scale as i32) + dx as i32;
                         let py = start_y + (row as i32 * scale as i32) + dy as i32;
                         blend_pixel(image, px, py, color);
                     }
