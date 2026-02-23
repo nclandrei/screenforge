@@ -3,11 +3,13 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use anyhow::{Context, Result, bail};
+use image::DynamicImage;
 
 use crate::background::render_background;
 use crate::capture::capture_scene;
 use crate::compose::compose_scene;
-use crate::config::Config;
+use crate::config::{AutoColorStrategy, Config};
+use crate::palette::{extract_dominant_colors, generate_palette, PaletteStrategy};
 use crate::preview::{PreviewItem, write_index};
 
 pub struct RunSummary {
@@ -49,8 +51,18 @@ pub fn run(config_path: &Path) -> Result<RunSummary> {
 
         let raw_img = image::open(&raw_path)
             .with_context(|| format!("failed opening raw screenshot {}", raw_path.display()))?;
-        let background =
-            render_background(&scene.background, scene.output.width, scene.output.height)?;
+
+        // Extract colors from screenshot if auto_colors is enabled
+        let bg_config = if scene.background.auto_colors {
+            let palette = extract_auto_palette(&raw_img, scene.background.auto_strategy);
+            let mut cfg = scene.background.clone();
+            cfg.colors = palette;
+            cfg
+        } else {
+            scene.background.clone()
+        };
+
+        let background = render_background(&bg_config, scene.output.width, scene.output.height)?;
         let final_img = compose_scene(&raw_img, scene, background, &config_dir)?;
 
         let final_path = final_dir.join(&scene.output.filename);
@@ -80,4 +92,15 @@ fn resolve_path(config_dir: &Path, path: &Path) -> PathBuf {
     } else {
         config_dir.join(path)
     }
+}
+
+fn extract_auto_palette(image: &DynamicImage, strategy: AutoColorStrategy) -> Vec<String> {
+    let dominant = extract_dominant_colors(image, 4);
+    let palette_strategy = match strategy {
+        AutoColorStrategy::Monochromatic => PaletteStrategy::Monochromatic,
+        AutoColorStrategy::Analogous => PaletteStrategy::Analogous,
+        AutoColorStrategy::Complementary => PaletteStrategy::Complementary,
+        AutoColorStrategy::Triadic => PaletteStrategy::Triadic,
+    };
+    generate_palette(&dominant, palette_strategy)
 }

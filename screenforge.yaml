@@ -69,3 +69,120 @@ scenes:
       headline_scale: 7
       subheadline_scale: 3
       line_gap: 14
+
+  # Auto-color scenes - palette extracted from screenshot
+  - id: auto_mono
+    capture:
+      adapter: file
+      path: ./examples/input/demo.ppm
+    output:
+      filename: 03-auto-mono.png
+      width: 1290
+      height: 2796
+    background:
+      template: mesh
+      seed: 42
+      auto_colors: true
+      auto_strategy: monochromatic
+    phone:
+      model: iphone_16_pro
+      x: 170
+      y: 430
+      width: 950
+      height: 1980
+    copy:
+      headline: "AUTO PALETTE"
+      subheadline: "Monochromatic: variations of dominant color"
+      color: "#FFFFFF"
+      x: 86
+      y: 94
+      headline_scale: 7
+      subheadline_scale: 3
+      line_gap: 14
+
+  - id: auto_analogous
+    capture:
+      adapter: file
+      path: ./examples/input/demo.ppm
+    output:
+      filename: 04-auto-analogous.png
+      width: 1290
+      height: 2796
+    background:
+      template: mesh
+      seed: 55
+      auto_colors: true
+      auto_strategy: analogous
+    phone:
+      model: iphone_16_pro
+      x: 170
+      y: 430
+      width: 950
+      height: 1980
+    copy:
+      headline: "AUTO PALETTE"
+      subheadline: "Analogous: adjacent colors on wheel"
+      color: "#FFFFFF"
+      x: 86
+      y: 94
+      headline_scale: 7
+      subheadline_scale: 3
+      line_gap: 14
+
+  - id: auto_complement
+    capture:
+      adapter: file
+      path: ./examples/input/demo.ppm
+    output:
+      filename: 05-auto-complement.png
+      width: 1290
+      height: 2796
+    background:
+      template: mesh
+      seed: 77
+      auto_colors: true
+      auto_strategy: complementary
+    phone:
+      model: iphone_16_pro
+      x: 170
+      y: 430
+      width: 950
+      height: 1980
+    copy:
+      headline: "AUTO PALETTE"
+      subheadline: "Complementary: opposite on color wheel"
+      color: "#FFFFFF"
+      x: 86
+      y: 94
+      headline_scale: 7
+      subheadline_scale: 3
+      line_gap: 14
+
+  - id: auto_triadic
+    capture:
+      adapter: file
+      path: ./examples/input/demo.ppm
+    output:
+      filename: 06-auto-triadic.png
+      width: 1290
+      height: 2796
+    background:
+      template: mesh
+      seed: 88
+      auto_colors: true
+      auto_strategy: triadic
+    phone:
+      model: iphone_16_pro
+      x: 170
+      y: 430
+      width: 950
+      height: 1980
+    copy:
+      headline: "AUTO PALETTE"
+      subheadline: "Triadic: three equally spaced colors"
+      color: "#FFFFFF"
+      x: 86
+      y: 94
+      headline_scale: 7
+      subheadline_scale: 3
+      line_gap: 14

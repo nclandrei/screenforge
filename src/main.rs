@@ -6,6 +6,7 @@ mod compose;
 mod config;
 mod devices;
 mod frames;
+mod palette;
 mod pipeline;
 mod preview;
 mod simulator;

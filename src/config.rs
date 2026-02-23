@@ -64,7 +64,7 @@ pub struct OutputConfig {
     pub height: u32,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct BackgroundConfig {
     #[serde(default)]
     pub template: BackgroundTemplate,
@@ -72,6 +72,26 @@ pub struct BackgroundConfig {
     pub seed: u64,
     #[serde(default = "default_palette")]
     pub colors: Vec<String>,
+    /// When true, automatically extract colors from the screenshot
+    #[serde(default)]
+    pub auto_colors: bool,
+    /// Strategy for generating palette from extracted colors
+    #[serde(default)]
+    pub auto_strategy: AutoColorStrategy,
+}
+
+#[derive(Debug, Deserialize, Clone, Copy, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum AutoColorStrategy {
+    /// Darker/lighter variations of dominant color
+    #[default]
+    Monochromatic,
+    /// Colors adjacent on the color wheel
+    Analogous,
+    /// Opposite on color wheel for contrast
+    Complementary,
+    /// Three colors equally spaced
+    Triadic,
 }
 
 #[derive(Debug, Deserialize, Clone, Copy, Default)]
