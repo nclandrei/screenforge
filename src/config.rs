@@ -2,7 +2,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use anyhow::{Context, Result};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize)]
 pub struct Config {
@@ -32,7 +32,7 @@ pub struct SceneConfig {
     pub copy: Option<CopyConfig>,
 }
 
-#[derive(Debug, Deserialize, Clone, Copy)]
+#[derive(Debug, Deserialize, Serialize, Clone, Copy, PartialEq)]
 pub enum PhoneModel {
     #[serde(rename = "iphone_16_pro")]
     Iphone16Pro,
