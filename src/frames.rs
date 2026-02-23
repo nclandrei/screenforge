@@ -315,7 +315,9 @@ pub fn resolve_overlay_for_verify(
 pub fn model_slug(model: PhoneModel) -> &'static str {
     match model {
         PhoneModel::Iphone16Pro => "iphone_16_pro",
+        PhoneModel::Iphone16ProMax => "iphone_16_pro_max",
         PhoneModel::Iphone17Pro => "iphone_17_pro",
+        PhoneModel::Iphone17ProMax => "iphone_17_pro_max",
     }
 }
 
