@@ -104,13 +104,14 @@ pub fn compose_scene(
 
     // When using overlay, use corner radius that fits within the frame's screen cutout
     // Each device model has a different frame geometry requiring a specific radius
+    // Pro Max frames (1520x3068) have different geometry than Pro frames (1406x2822)
     let screenshot_radius = if overlay.is_some() {
         use crate::config::PhoneModel;
         let ratio = match phone.model {
             Some(PhoneModel::Iphone16Pro) => 0.16,
             Some(PhoneModel::Iphone17Pro) => 0.145,
-            Some(PhoneModel::Iphone16ProMax) => 0.145,
-            Some(PhoneModel::Iphone17ProMax) => 0.145,
+            Some(PhoneModel::Iphone16ProMax) => 0.135,
+            Some(PhoneModel::Iphone17ProMax) => 0.13,
             _ => 0.145,
         };
         (phone.width as f32 * ratio).round() as u32
