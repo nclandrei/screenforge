@@ -132,12 +132,12 @@ fn profile_for(model: PhoneModel) -> DeviceProfile {
             corner_radius: 126,
             screen_padding: Insets {
                 top: 54,
-                right: 30,
-                bottom: 42,
-                left: 30,
+                right: 28,
+                bottom: 40,
+                left: 28,
             },
             frame_color: "#767C86",
-            frame_border_width: 14,
+            frame_border_width: 13,
             shadow_offset_y: 25,
             shadow_alpha: 83,
             island: Some(DynamicIslandSpec {
@@ -150,13 +150,13 @@ fn profile_for(model: PhoneModel) -> DeviceProfile {
         PhoneModel::Iphone17Pro => DeviceProfile {
             corner_radius: 122,
             screen_padding: Insets {
-                top: 56,
+                top: 54,
                 right: 28,
                 bottom: 40,
                 left: 28,
             },
             frame_color: "#686F78",
-            frame_border_width: 14,
+            frame_border_width: 13,
             shadow_offset_y: 25,
             shadow_alpha: 84,
             island: Some(DynamicIslandSpec {
@@ -169,13 +169,13 @@ fn profile_for(model: PhoneModel) -> DeviceProfile {
         PhoneModel::Iphone17ProMax => DeviceProfile {
             corner_radius: 130,
             screen_padding: Insets {
-                top: 56,
-                right: 30,
-                bottom: 42,
-                left: 30,
+                top: 54,
+                right: 28,
+                bottom: 40,
+                left: 28,
             },
             frame_color: "#666D76",
-            frame_border_width: 15,
+            frame_border_width: 13,
             shadow_offset_y: 26,
             shadow_alpha: 85,
             island: Some(DynamicIslandSpec {

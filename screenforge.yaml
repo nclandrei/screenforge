@@ -187,7 +187,7 @@ scenes:
       subheadline_scale: 3
       line_gap: 14
 
-  # Frame test scenes - all 4 device models
+  # Frame alignment test scenes - all 4 device models
   - id: frame_16_pro
     capture:
       adapter: file
