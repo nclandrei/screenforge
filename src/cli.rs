@@ -111,6 +111,14 @@ pub enum Commands {
         /// Background colors (comma-separated hex colors)
         #[arg(long, value_delimiter = ',')]
         colors: Option<Vec<String>>,
+
+        /// Auto-generate background colors from screenshot
+        #[arg(long, default_value_t = false)]
+        auto_colors: bool,
+
+        /// Strategy for auto-generated colors
+        #[arg(long, value_enum, default_value_t = AutoStrategyArg::Analogous)]
+        auto_strategy: AutoStrategyArg,
     },
     /// Convert mockup frames (white screen) to overlay frames (transparent screen)
     ///
@@ -173,6 +181,26 @@ impl From<BackgroundTemplateArg> for crate::config::BackgroundTemplate {
         match arg {
             BackgroundTemplateArg::Mesh => Self::Mesh,
             BackgroundTemplateArg::Stripes => Self::Stripes,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, ValueEnum, Default)]
+pub enum AutoStrategyArg {
+    Monochromatic,
+    #[default]
+    Analogous,
+    Complementary,
+    Triadic,
+}
+
+impl From<AutoStrategyArg> for crate::palette::PaletteStrategy {
+    fn from(arg: AutoStrategyArg) -> Self {
+        match arg {
+            AutoStrategyArg::Monochromatic => Self::Monochromatic,
+            AutoStrategyArg::Analogous => Self::Analogous,
+            AutoStrategyArg::Complementary => Self::Complementary,
+            AutoStrategyArg::Triadic => Self::Triadic,
         }
     }
 }

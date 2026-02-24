@@ -88,6 +88,8 @@ fn main() -> Result<()> {
             background,
             seed,
             colors,
+            auto_colors,
+            auto_strategy,
         } => {
             // Handle --list flag
             if list {
@@ -172,6 +174,8 @@ fn main() -> Result<()> {
                             "#A9E7FF".to_string(),
                         ]
                     }),
+                    auto_colors,
+                    auto_strategy: auto_strategy.into(),
                     headline,
                     subheadline,
                     settle_ms,

@@ -12,6 +12,7 @@ use crate::config::{
     BackgroundConfig, BackgroundTemplate, CaptureConfig, CopyConfig, Insets, OutputConfig,
     PhoneConfig, PhoneModel, SceneConfig,
 };
+use crate::palette::{extract_dominant_colors, generate_palette, PaletteStrategy};
 use crate::simulator::{find_booted_simulators, find_simulator};
 
 /// Configuration for a snap operation, loaded from YAML preset or CLI flags
@@ -31,6 +32,8 @@ pub struct SnapConfig {
     pub background_template: BackgroundTemplate,
     pub background_seed: u64,
     pub background_colors: Vec<String>,
+    pub auto_colors: bool,
+    pub auto_strategy: PaletteStrategy,
 
     /// Optional copy/text
     pub headline: Option<String>,
@@ -61,6 +64,8 @@ impl Default for SnapConfig {
                 "#2B8CD6".to_string(),
                 "#A9E7FF".to_string(),
             ],
+            auto_colors: false,
+            auto_strategy: PaletteStrategy::Analogous,
             headline: None,
             subheadline: None,
             settle_ms: 500,
@@ -192,6 +197,14 @@ pub fn snap_framed(
     let (phone_width, phone_height, phone_x, phone_y) =
         calculate_phone_layout(config, &raw_img);
 
+    // Determine background colors (auto-extract or use provided)
+    let background_colors = if config.auto_colors {
+        let dominant = extract_dominant_colors(&raw_img, 4);
+        generate_palette(&dominant, config.auto_strategy)
+    } else {
+        config.background_colors.clone()
+    };
+
     // Build scene config for compose
     let scene = SceneConfig {
         id: "snap".to_string(),
@@ -210,7 +223,7 @@ pub fn snap_framed(
         background: BackgroundConfig {
             template: config.background_template,
             seed: config.background_seed,
-            colors: config.background_colors.clone(),
+            colors: background_colors,
             auto_colors: false,
             auto_strategy: Default::default(),
         },
