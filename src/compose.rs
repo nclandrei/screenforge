@@ -100,7 +100,7 @@ pub fn compose_scene(
     let screenshot_radius = if overlay.is_some() {
         // Overlay frames have their own screen cutout - use significantly larger radius
         // to ensure screenshot stays well within the frame's inner rounded corners
-        style.corner_radius + 25
+        style.corner_radius + 50
     } else {
         style.corner_radius.saturating_sub(style.frame_border_width + 2)
     };
