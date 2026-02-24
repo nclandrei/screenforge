@@ -26,36 +26,41 @@ pub fn compose_scene(
     }
 
     let style = resolve_phone_style(phone);
-    let frame_color = parse_hex_rgba(&style.frame_color)?;
+    let overlay = resolve_overlay_for_compose(scene, config_dir);
 
-    let shadow_y = phone.y as i32 + style.shadow_offset_y;
-    fill_rounded_rect(
-        &mut background,
-        phone.x as i32,
-        shadow_y,
-        phone.width,
-        phone.height,
-        style.corner_radius,
-        Rgba([0, 0, 0, style.shadow_alpha]),
-    );
+    // Only draw programmatic frame if no overlay is provided
+    if overlay.is_none() {
+        let frame_color = parse_hex_rgba(&style.frame_color)?;
 
-    fill_rounded_rect(
-        &mut background,
-        phone.x as i32,
-        phone.y as i32,
-        phone.width,
-        phone.height,
-        style.corner_radius,
-        frame_color,
-    );
-    draw_frame_tones(
-        &mut background,
-        phone.x as i32,
-        phone.y as i32,
-        phone.width,
-        phone.height,
-        style.corner_radius,
-    );
+        let shadow_y = phone.y as i32 + style.shadow_offset_y;
+        fill_rounded_rect(
+            &mut background,
+            phone.x as i32,
+            shadow_y,
+            phone.width,
+            phone.height,
+            style.corner_radius,
+            Rgba([0, 0, 0, style.shadow_alpha]),
+        );
+
+        fill_rounded_rect(
+            &mut background,
+            phone.x as i32,
+            phone.y as i32,
+            phone.width,
+            phone.height,
+            style.corner_radius,
+            frame_color,
+        );
+        draw_frame_tones(
+            &mut background,
+            phone.x as i32,
+            phone.y as i32,
+            phone.width,
+            phone.height,
+            style.corner_radius,
+        );
+    }
 
     let inset_left = style
         .screen_padding
@@ -102,21 +107,11 @@ pub fn compose_scene(
         screenshot_radius,
     );
 
-    if let Some(island) = style.island {
-        draw_dynamic_island(
-            &mut background,
-            screen_x as i32,
-            screen_y as i32,
-            screen_w,
-            screen_h,
-            island,
-        );
-    }
-
-    if let Some(overlay) = resolve_overlay_for_compose(scene, config_dir) {
+    if let Some(ref ov) = overlay {
+        // Use the overlay PNG for the frame
         apply_phone_overlay(
             &mut background,
-            &overlay.path,
+            &ov.path,
             phone.x as i32,
             phone.y as i32,
             phone.width,
@@ -126,10 +121,20 @@ pub fn compose_scene(
             format!(
                 "scene '{}' failed applying {} overlay {}",
                 scene.id,
-                overlay.source.label(),
-                overlay.path.display()
+                ov.source.label(),
+                ov.path.display()
             )
         })?;
+    } else if let Some(island) = style.island {
+        // Only draw programmatic dynamic island if no overlay
+        draw_dynamic_island(
+            &mut background,
+            screen_x as i32,
+            screen_y as i32,
+            screen_w,
+            screen_h,
+            island,
+        );
     }
 
     Ok(background)
