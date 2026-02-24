@@ -1,14 +1,20 @@
 use std::path::Path;
 
+use ab_glyph::{Font, FontRef, PxScale, ScaleFont};
 use anyhow::{Context, Result, bail};
-use font8x8::{BASIC_FONTS, UnicodeFonts};
 use image::imageops::{FilterType, crop_imm};
 use image::{DynamicImage, GenericImageView, Rgba, RgbaImage};
 
 use crate::color::parse_hex_rgba;
-use crate::config::{CopyConfig, SceneConfig};
+use crate::config::{CopyConfig, FontWeight, SceneConfig};
 use crate::devices::{DynamicIslandSpec, resolve_phone_style};
 use crate::frames::resolve_overlay_for_compose;
+
+// Embed Geist fonts directly in the binary
+static GEIST_REGULAR: &[u8] = include_bytes!("../assets/fonts/Geist-Regular.ttf");
+static GEIST_MEDIUM: &[u8] = include_bytes!("../assets/fonts/Geist-Medium.ttf");
+static GEIST_SEMIBOLD: &[u8] = include_bytes!("../assets/fonts/Geist-SemiBold.ttf");
+static GEIST_BOLD: &[u8] = include_bytes!("../assets/fonts/Geist-Bold.ttf");
 
 pub fn compose_scene(
     screenshot: &DynamicImage,
@@ -98,9 +104,9 @@ pub fn compose_scene(
 
     // When using overlay, use larger corner radius to stay within the frame's screen cutout
     let screenshot_radius = if overlay.is_some() {
-        // Overlay frames have their own screen cutout - use significantly larger radius
-        // to ensure screenshot stays well within the frame's inner rounded corners
-        style.corner_radius + 50
+        // Overlay frames have their own screen cutout - scale radius proportionally
+        // Based on iPhone 16 Pro: corner_radius 116 needs +50 offset (43% increase)
+        ((style.corner_radius as f32) * 1.43).round() as u32
     } else {
         style.corner_radius.saturating_sub(style.frame_border_width + 2)
     };
@@ -147,27 +153,44 @@ pub fn compose_scene(
     Ok(background)
 }
 
+fn get_font(weight: FontWeight) -> Result<FontRef<'static>> {
+    let data = match weight {
+        FontWeight::Regular => GEIST_REGULAR,
+        FontWeight::Medium => GEIST_MEDIUM,
+        FontWeight::SemiBold => GEIST_SEMIBOLD,
+        FontWeight::Bold => GEIST_BOLD,
+    };
+    FontRef::try_from_slice(data).context("failed to load embedded Geist font")
+}
+
 fn draw_copy(image: &mut RgbaImage, copy: &CopyConfig) -> Result<()> {
     let color = parse_hex_rgba(&copy.color)?;
-    let max_width = image.width().saturating_sub(copy.x.saturating_add(80));
+    let max_width = copy
+        .max_width
+        .unwrap_or_else(|| image.width().saturating_sub(copy.x.saturating_add(80)));
+
+    let headline_font = get_font(copy.headline_weight)?;
     let used = draw_text_wrapped(
         image,
         &copy.headline,
         copy.x as i32,
         copy.y as i32,
-        copy.headline_scale.max(1),
+        copy.headline_size,
+        &headline_font,
         color,
         max_width,
     );
 
     if !copy.subheadline.trim().is_empty() {
         let sub_y = copy.y.saturating_add(used).saturating_add(copy.line_gap);
+        let subheadline_font = get_font(copy.subheadline_weight)?;
         draw_text_wrapped(
             image,
             &copy.subheadline,
             copy.x as i32,
             sub_y as i32,
-            copy.subheadline_scale.max(1),
+            copy.subheadline_size,
+            &subheadline_font,
             color,
             max_width,
         );
@@ -181,7 +204,8 @@ fn draw_text_wrapped(
     text: &str,
     start_x: i32,
     start_y: i32,
-    scale: u32,
+    font_size: f32,
+    font: &FontRef,
     color: Rgba<u8>,
     max_width: u32,
 ) -> u32 {
@@ -189,40 +213,54 @@ fn draw_text_wrapped(
         return 0;
     }
 
-    let glyph_w = 8 * scale;
-    let line_height = 10 * scale;
-    let max_chars = (max_width / glyph_w.max(1)).max(1) as usize;
-    let lines = wrap_text(text, max_chars);
+    let scale = PxScale::from(font_size);
+    let scaled_font = font.as_scaled(scale);
+    let line_height = (scaled_font.height() * 1.2).ceil() as u32;
+
+    let lines = wrap_text_by_width(text, &scaled_font, max_width as f32);
 
     for (line_index, line) in lines.iter().enumerate() {
-        let y = start_y + (line_index as i32 * line_height as i32);
-        draw_bitmap_text(image, line, start_x, y, scale, color);
+        let y = start_y + (line_index as u32 * line_height) as i32;
+        draw_text_line(image, line, start_x, y, &scaled_font, color);
     }
 
     lines.len() as u32 * line_height
 }
 
-fn wrap_text(text: &str, max_chars: usize) -> Vec<String> {
+fn wrap_text_by_width<F: Font>(text: &str, font: &ab_glyph::PxScaleFont<&F>, max_width: f32) -> Vec<String> {
     let mut out = Vec::new();
+
     for hard_line in text.lines() {
-        if hard_line.chars().count() <= max_chars {
+        let line_width = measure_text_width(hard_line, font);
+        if line_width <= max_width {
             out.push(hard_line.to_string());
             continue;
         }
 
         let mut current = String::new();
+        let mut current_width = 0.0f32;
+
         for word in hard_line.split_whitespace() {
-            if current.is_empty() {
-                current.push_str(word);
-                continue;
-            }
-            let next_len = current.chars().count() + 1 + word.chars().count();
-            if next_len <= max_chars {
-                current.push(' ');
-                current.push_str(word);
+            let word_width = measure_text_width(word, font);
+            let space_width = if current.is_empty() {
+                0.0
             } else {
-                out.push(current);
+                measure_text_width(" ", font)
+            };
+
+            if current_width + space_width + word_width <= max_width {
+                if !current.is_empty() {
+                    current.push(' ');
+                    current_width += space_width;
+                }
+                current.push_str(word);
+                current_width += word_width;
+            } else {
+                if !current.is_empty() {
+                    out.push(current);
+                }
                 current = word.to_string();
+                current_width = word_width;
             }
         }
 
@@ -237,38 +275,59 @@ fn wrap_text(text: &str, max_chars: usize) -> Vec<String> {
     out
 }
 
-fn draw_bitmap_text(
+fn measure_text_width<F: Font>(text: &str, font: &ab_glyph::PxScaleFont<&F>) -> f32 {
+    let mut width = 0.0f32;
+    let mut prev_glyph: Option<ab_glyph::GlyphId> = None;
+
+    for ch in text.chars() {
+        let glyph_id = font.glyph_id(ch);
+        if let Some(prev) = prev_glyph {
+            width += font.kern(prev, glyph_id);
+        }
+        width += font.h_advance(glyph_id);
+        prev_glyph = Some(glyph_id);
+    }
+
+    width
+}
+
+fn draw_text_line<F: Font>(
     image: &mut RgbaImage,
     text: &str,
     start_x: i32,
     start_y: i32,
-    scale: u32,
+    font: &ab_glyph::PxScaleFont<&F>,
     color: Rgba<u8>,
 ) {
-    let mut cursor_x = start_x;
+    let mut cursor_x = start_x as f32;
+    let mut prev_glyph: Option<ab_glyph::GlyphId> = None;
+
     for ch in text.chars() {
-        let glyph = BASIC_FONTS
-            .get(ch)
-            .or_else(|| BASIC_FONTS.get('?'))
-            .unwrap_or([0; 8]);
+        let glyph_id = font.glyph_id(ch);
 
-        for (row, bits) in glyph.iter().enumerate() {
-            for col in 0..8 {
-                if (bits >> col) & 1 == 0 {
-                    continue;
-                }
-
-                for dy in 0..scale {
-                    for dx in 0..scale {
-                        let px = cursor_x + (col as i32 * scale as i32) + dx as i32;
-                        let py = start_y + (row as i32 * scale as i32) + dy as i32;
-                        blend_pixel(image, px, py, color);
-                    }
-                }
-            }
+        if let Some(prev) = prev_glyph {
+            cursor_x += font.kern(prev, glyph_id);
         }
 
-        cursor_x += (8 * scale + scale) as i32;
+        let glyph = glyph_id.with_scale_and_position(
+            font.scale(),
+            ab_glyph::point(cursor_x, start_y as f32 + font.ascent()),
+        );
+
+        if let Some(outlined) = font.outline_glyph(glyph) {
+            let bounds = outlined.px_bounds();
+            outlined.draw(|gx, gy, coverage| {
+                let px = bounds.min.x as i32 + gx as i32;
+                let py = bounds.min.y as i32 + gy as i32;
+                let alpha = (coverage * color[3] as f32).round().clamp(0.0, 255.0) as u8;
+                if alpha > 0 {
+                    blend_pixel(image, px, py, Rgba([color[0], color[1], color[2], alpha]));
+                }
+            });
+        }
+
+        cursor_x += font.h_advance(glyph_id);
+        prev_glyph = Some(glyph_id);
     }
 }
 

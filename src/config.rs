@@ -145,6 +145,16 @@ impl Default for Insets {
     }
 }
 
+#[derive(Debug, Deserialize, Clone, Copy, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum FontWeight {
+    Regular,
+    Medium,
+    #[default]
+    SemiBold,
+    Bold,
+}
+
 #[derive(Debug, Deserialize)]
 pub struct CopyConfig {
     pub headline: String,
@@ -156,12 +166,23 @@ pub struct CopyConfig {
     pub x: u32,
     #[serde(default = "default_copy_y")]
     pub y: u32,
-    #[serde(default = "default_headline_scale")]
-    pub headline_scale: u32,
-    #[serde(default = "default_subheadline_scale")]
-    pub subheadline_scale: u32,
+    /// Headline font size in pixels (default: 72)
+    #[serde(default = "default_headline_size")]
+    pub headline_size: f32,
+    /// Subheadline font size in pixels (default: 36)
+    #[serde(default = "default_subheadline_size")]
+    pub subheadline_size: f32,
+    /// Font weight for headline (default: bold)
+    #[serde(default)]
+    pub headline_weight: FontWeight,
+    /// Font weight for subheadline (default: regular)
+    #[serde(default = "default_subheadline_weight")]
+    pub subheadline_weight: FontWeight,
     #[serde(default = "default_line_gap")]
     pub line_gap: u32,
+    /// Maximum width for text wrapping (default: auto based on image width)
+    #[serde(default)]
+    pub max_width: Option<u32>,
 }
 
 fn default_output_dir() -> PathBuf {
@@ -217,14 +238,18 @@ fn default_copy_y() -> u32 {
     98
 }
 
-fn default_headline_scale() -> u32 {
-    6
+fn default_headline_size() -> f32 {
+    120.0
 }
 
-fn default_subheadline_scale() -> u32 {
-    3
+fn default_subheadline_size() -> f32 {
+    56.0
+}
+
+fn default_subheadline_weight() -> FontWeight {
+    FontWeight::Regular
 }
 
 fn default_line_gap() -> u32 {
-    16
+    24
 }

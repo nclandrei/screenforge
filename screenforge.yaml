@@ -186,3 +186,132 @@ scenes:
       headline_scale: 7
       subheadline_scale: 3
       line_gap: 14
+
+  # Frame test scenes - all 4 device models
+  - id: frame_16_pro
+    capture:
+      adapter: file
+      path: ./examples/input/demo.ppm
+    output:
+      filename: 07-frame-16-pro.png
+      width: 1290
+      height: 2796
+    background:
+      template: mesh
+      seed: 100
+      colors:
+        - "#1a1a2e"
+        - "#16213e"
+        - "#0f3460"
+        - "#e94560"
+    phone:
+      model: iphone_16_pro
+      x: 170
+      y: 430
+      width: 950
+      height: 1980
+    copy:
+      headline: "iPhone 16 Pro"
+      subheadline: "Testing frame overlay alignment"
+      color: "#FFFFFF"
+      x: 86
+      y: 94
+      headline_scale: 7
+      subheadline_scale: 3
+      line_gap: 14
+
+  - id: frame_16_pro_max
+    capture:
+      adapter: file
+      path: ./examples/input/demo.ppm
+    output:
+      filename: 08-frame-16-pro-max.png
+      width: 1290
+      height: 2796
+    background:
+      template: mesh
+      seed: 101
+      colors:
+        - "#2d132c"
+        - "#801336"
+        - "#c72c41"
+        - "#ee4540"
+    phone:
+      model: iphone_16_pro_max
+      x: 170
+      y: 430
+      width: 950
+      height: 1980
+    copy:
+      headline: "iPhone 16 Pro Max"
+      subheadline: "Testing frame overlay alignment"
+      color: "#FFFFFF"
+      x: 86
+      y: 94
+      headline_scale: 7
+      subheadline_scale: 3
+      line_gap: 14
+
+  - id: frame_17_pro
+    capture:
+      adapter: file
+      path: ./examples/input/demo.ppm
+    output:
+      filename: 09-frame-17-pro.png
+      width: 1290
+      height: 2796
+    background:
+      template: mesh
+      seed: 102
+      colors:
+        - "#0d1b2a"
+        - "#1b263b"
+        - "#415a77"
+        - "#778da9"
+    phone:
+      model: iphone_17_pro
+      x: 170
+      y: 430
+      width: 950
+      height: 1980
+    copy:
+      headline: "iPhone 17 Pro"
+      subheadline: "Testing frame overlay alignment"
+      color: "#FFFFFF"
+      x: 86
+      y: 94
+      headline_scale: 7
+      subheadline_scale: 3
+      line_gap: 14
+
+  - id: frame_17_pro_max
+    capture:
+      adapter: file
+      path: ./examples/input/demo.ppm
+    output:
+      filename: 10-frame-17-pro-max.png
+      width: 1290
+      height: 2796
+    background:
+      template: mesh
+      seed: 103
+      colors:
+        - "#10002b"
+        - "#240046"
+        - "#5a189a"
+        - "#9d4edd"
+    phone:
+      model: iphone_17_pro_max
+      x: 170
+      y: 430
+      width: 950
+      height: 1980
+    copy:
+      headline: "iPhone 17 Pro Max"
+      subheadline: "Testing frame overlay alignment"
+      color: "#FFFFFF"
+      x: 86
+      y: 94
+      headline_scale: 7
+      subheadline_scale: 3
+      line_gap: 14

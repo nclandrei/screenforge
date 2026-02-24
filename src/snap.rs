@@ -338,8 +338,11 @@ fn build_copy_config(config: &SnapConfig) -> Option<CopyConfig> {
         color: "#F4F8FF".to_string(),
         x: 84,
         y: 98,
-        headline_scale: 6,
-        subheadline_scale: 3,
-        line_gap: 16,
+        headline_size: 120.0,
+        subheadline_size: 56.0,
+        headline_weight: crate::config::FontWeight::Bold,
+        subheadline_weight: crate::config::FontWeight::Regular,
+        line_gap: 24,
+        max_width: None,
     })
 }
