@@ -95,9 +95,16 @@ pub fn compose_scene(
 
     let screen_x = phone.x.saturating_add(inset_left);
     let screen_y = phone.y.saturating_add(inset_top);
-    let screenshot_radius = style
-        .corner_radius
-        .saturating_sub(style.frame_border_width + 2);
+
+    // When using overlay, use larger corner radius to stay within the frame's screen cutout
+    let screenshot_radius = if overlay.is_some() {
+        // Overlay frames have their own screen cutout - use significantly larger radius
+        // to ensure screenshot stays well within the frame's inner rounded corners
+        style.corner_radius + 25
+    } else {
+        style.corner_radius.saturating_sub(style.frame_border_width + 2)
+    };
+
     let fitted = resize_cover(screenshot, screen_w, screen_h);
     blit_rounded(
         &mut background,
