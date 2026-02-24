@@ -109,8 +109,8 @@ pub fn compose_scene(
         let ratio = match phone.model {
             Some(PhoneModel::Iphone16Pro) => 0.16,
             Some(PhoneModel::Iphone17Pro) => 0.145,
-            Some(PhoneModel::Iphone16ProMax) => 0.12,
-            Some(PhoneModel::Iphone17ProMax) => 0.12,
+            Some(PhoneModel::Iphone16ProMax) => 0.145,
+            Some(PhoneModel::Iphone17ProMax) => 0.145,
             _ => 0.145,
         };
         (phone.width as f32 * ratio).round() as u32

@@ -2,6 +2,12 @@
 name = "screenforge"
 version = "0.1.0"
 edition = "2024"
+description = "CLI tool for generating App Store-style marketing screenshots"
+license = "MIT"
+repository = "https://github.com/nclandrei/screenforge"
+authors = ["Andrei Nicolae"]
+keywords = ["screenshot", "mockup", "app-store", "ios", "marketing"]
+categories = ["command-line-utilities", "multimedia::images"]
 
 [dependencies]
 ab_glyph = "0.2"
