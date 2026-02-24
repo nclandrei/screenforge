@@ -196,6 +196,21 @@ fn main() -> Result<()> {
                 }
             }
         }
+        Commands::ConvertFrames {
+            source,
+            dest,
+            overwrite,
+            white_threshold,
+        } => {
+            let summary = frames::convert_frames(&source, &dest, overwrite, white_threshold)?;
+            println!("Converted frames from {}", summary.source.display());
+            println!("Destination: {}", summary.destination.display());
+            println!("Converted: {}", summary.converted);
+            println!("Skipped: {}", summary.skipped);
+            for line in summary.notes {
+                println!("  - {}", line);
+            }
+        }
     }
 
     Ok(())

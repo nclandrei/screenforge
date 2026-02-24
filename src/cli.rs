@@ -112,6 +112,29 @@ pub enum Commands {
         #[arg(long, value_delimiter = ',')]
         colors: Option<Vec<String>>,
     },
+    /// Convert mockup frames (white screen) to overlay frames (transparent screen)
+    ///
+    /// Takes PNG images where the phone screen is white and converts those
+    /// white pixels to transparent, creating overlay frames for compositing.
+    ///
+    /// Examples:
+    ///   screenforge convert-frames --source ./mockups
+    ///   screenforge convert-frames --source ./mockups --white-threshold 240
+    #[command(verbatim_doc_comment)]
+    ConvertFrames {
+        /// Source directory containing PNG mockup frames
+        #[arg(short, long)]
+        source: PathBuf,
+        /// Destination directory for converted overlays
+        #[arg(long, default_value = "assets/frames")]
+        dest: PathBuf,
+        /// Overwrite destination overlays if they already exist
+        #[arg(long, default_value_t = false)]
+        overwrite: bool,
+        /// Threshold for white detection (0-255, pixels with all RGB channels >= threshold are made transparent)
+        #[arg(long, default_value_t = 250)]
+        white_threshold: u8,
+    },
 }
 
 #[derive(Debug, Clone, Copy, ValueEnum)]

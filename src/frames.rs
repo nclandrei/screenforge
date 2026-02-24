@@ -74,6 +74,15 @@ pub struct ImportSummary {
     pub notes: Vec<String>,
 }
 
+#[derive(Debug)]
+pub struct ConvertSummary {
+    pub source: PathBuf,
+    pub destination: PathBuf,
+    pub converted: usize,
+    pub skipped: usize,
+    pub notes: Vec<String>,
+}
+
 pub fn import_frames(source: &Path, destination: &Path, overwrite: bool) -> Result<ImportSummary> {
     let source_metadata = fs::metadata(source)
         .with_context(|| format!("failed reading source {}", source.display()))?;
@@ -176,6 +185,142 @@ pub fn import_frames(source: &Path, destination: &Path, overwrite: bool) -> Resu
         skipped,
         notes,
     })
+}
+
+/// Convert mockup frames (white screen area) to overlay frames (transparent screen area).
+///
+/// This function takes PNG images where the phone screen is filled with white/near-white
+/// pixels and converts those pixels to transparent, creating overlay frames suitable
+/// for compositing screenshots underneath.
+pub fn convert_frames(
+    source: &Path,
+    destination: &Path,
+    overwrite: bool,
+    white_threshold: u8,
+) -> Result<ConvertSummary> {
+    let source_metadata = fs::metadata(source)
+        .with_context(|| format!("failed reading source {}", source.display()))?;
+    if !source_metadata.is_dir() {
+        anyhow::bail!("source is not a directory: {}", source.display());
+    }
+
+    fs::create_dir_all(destination)
+        .with_context(|| format!("failed creating {}", destination.display()))?;
+
+    let mut entries = fs::read_dir(source)
+        .with_context(|| format!("failed reading source {}", source.display()))?
+        .collect::<std::result::Result<Vec<_>, _>>()
+        .with_context(|| format!("failed listing files in {}", source.display()))?;
+    entries.sort_by_key(|entry| entry.file_name());
+
+    let mut converted = 0usize;
+    let mut skipped = 0usize;
+    let mut notes = Vec::new();
+
+    for entry in entries {
+        let file_type = entry
+            .file_type()
+            .with_context(|| format!("failed reading file type for {}", entry.path().display()))?;
+        if !file_type.is_file() {
+            continue;
+        }
+
+        let src_path = entry.path();
+        if !is_png_file(&src_path) {
+            skipped += 1;
+            notes.push(format!(
+                "skip {}: only .png files are supported",
+                src_path.display()
+            ));
+            continue;
+        }
+
+        let stem = src_path
+            .file_stem()
+            .and_then(|value| value.to_str())
+            .unwrap_or("");
+        let slug = normalize_frame_slug(stem);
+        if slug.is_empty() {
+            skipped += 1;
+            notes.push(format!(
+                "skip {}: filename cannot be normalized to a slug",
+                src_path.display()
+            ));
+            continue;
+        }
+
+        let dest_path = destination.join(format!("{}.png", slug));
+        if dest_path.exists() && !overwrite {
+            skipped += 1;
+            notes.push(format!(
+                "skip {}: destination exists (use --overwrite to replace)",
+                dest_path.display()
+            ));
+            continue;
+        }
+
+        // Load and convert the image
+        match convert_white_to_transparent(&src_path, &dest_path, white_threshold) {
+            Ok(stats) => {
+                converted += 1;
+                notes.push(format!(
+                    "convert {} -> {} ({} pixels made transparent)",
+                    src_path.display(),
+                    dest_path.display(),
+                    stats.transparent_pixels
+                ));
+            }
+            Err(err) => {
+                skipped += 1;
+                notes.push(format!("skip {}: {}", src_path.display(), err));
+            }
+        }
+    }
+
+    Ok(ConvertSummary {
+        source: source.to_path_buf(),
+        destination: destination.to_path_buf(),
+        converted,
+        skipped,
+        notes,
+    })
+}
+
+struct ConvertStats {
+    transparent_pixels: usize,
+}
+
+fn convert_white_to_transparent(
+    src_path: &Path,
+    dest_path: &Path,
+    white_threshold: u8,
+) -> Result<ConvertStats> {
+    let image = image::open(src_path)
+        .with_context(|| format!("failed to open {}", src_path.display()))?;
+    let mut rgba = image.to_rgba8();
+
+    let mut transparent_pixels = 0usize;
+
+    for pixel in rgba.pixels_mut() {
+        // Check if pixel is white or near-white (all RGB channels >= threshold)
+        if pixel[0] >= white_threshold
+            && pixel[1] >= white_threshold
+            && pixel[2] >= white_threshold
+        {
+            // Make it fully transparent
+            pixel[3] = 0;
+            transparent_pixels += 1;
+        }
+    }
+
+    if transparent_pixels == 0 {
+        anyhow::bail!("no white pixels found (threshold: {})", white_threshold);
+    }
+
+    rgba.save(dest_path)
+        .with_context(|| format!("failed to save {}", dest_path.display()))?;
+
+    Ok(ConvertStats { transparent_pixels })
 }
 
 pub fn verify_overlays(config_path: &Path) -> Result<VerifySummary> {
