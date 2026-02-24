@@ -6,7 +6,7 @@ use image::imageops::{FilterType, crop_imm};
 use image::{DynamicImage, GenericImageView, Rgba, RgbaImage};
 
 use crate::color::parse_hex_rgba;
-use crate::config::{CopyConfig, FontWeight, SceneConfig};
+use crate::config::{CopyConfig, FontWeight, PhoneConfig, SceneConfig, TextPosition};
 use crate::devices::{DynamicIslandSpec, resolve_phone_style};
 use crate::frames::resolve_overlay_for_compose;
 
@@ -23,7 +23,7 @@ pub fn compose_scene(
     config_dir: &Path,
 ) -> Result<RgbaImage> {
     if let Some(copy) = &scene.copy {
-        draw_copy(&mut background, copy)?;
+        draw_copy(&mut background, copy, &scene.phone)?;
     }
 
     let phone = &scene.phone;
@@ -170,37 +170,93 @@ fn get_font(weight: FontWeight) -> Result<FontRef<'static>> {
     FontRef::try_from_slice(data).context("failed to load embedded Geist font")
 }
 
-fn draw_copy(image: &mut RgbaImage, copy: &CopyConfig) -> Result<()> {
+fn draw_copy(image: &mut RgbaImage, copy: &CopyConfig, phone: &PhoneConfig) -> Result<()> {
     let color = parse_hex_rgba(&copy.color)?;
-    let max_width = copy
-        .max_width
-        .unwrap_or_else(|| image.width().saturating_sub(copy.x.saturating_add(80)));
+    let image_width = image.width();
+    let image_height = image.height();
 
+    // Default max_width to 80% of image width for centered text
+    let max_width = copy.max_width.unwrap_or_else(|| (image_width as f32 * 0.8) as u32);
+
+    // Pre-calculate text dimensions to determine total height
     let headline_font = get_font(copy.headline_weight)?;
-    let used = draw_text_wrapped(
-        image,
-        &copy.headline,
-        copy.x as i32,
-        copy.y as i32,
-        copy.headline_size,
-        &headline_font,
-        color,
-        max_width,
-    );
+    let headline_scale = PxScale::from(copy.headline_size);
+    let headline_scaled = headline_font.as_scaled(headline_scale);
+    let headline_lines = wrap_text_by_width(&copy.headline, &headline_scaled, max_width as f32);
+    let headline_line_height = (headline_scaled.height() * 1.2).ceil() as u32;
+    let headline_total_height = headline_lines.len() as u32 * headline_line_height;
 
-    if !copy.subheadline.trim().is_empty() {
-        let sub_y = copy.y.saturating_add(used).saturating_add(copy.line_gap);
+    let (subheadline_lines, subheadline_total_height) = if !copy.subheadline.trim().is_empty() {
         let subheadline_font = get_font(copy.subheadline_weight)?;
-        draw_text_wrapped(
-            image,
-            &copy.subheadline,
-            copy.x as i32,
-            sub_y as i32,
-            copy.subheadline_size,
-            &subheadline_font,
-            color,
-            max_width,
-        );
+        let sub_scale = PxScale::from(copy.subheadline_size);
+        let sub_scaled = subheadline_font.as_scaled(sub_scale);
+        let lines = wrap_text_by_width(&copy.subheadline, &sub_scaled, max_width as f32);
+        let line_height = (sub_scaled.height() * 1.2).ceil() as u32;
+        let total = lines.len() as u32 * line_height;
+        (lines, total)
+    } else {
+        (vec![], 0)
+    };
+
+    let total_text_height = headline_total_height
+        + if subheadline_total_height > 0 { copy.line_gap + subheadline_total_height } else { 0 };
+
+    // Calculate base Y position based on TextPosition preset
+    let padding = 60u32; // Default padding from edges
+    let base_y = match copy.position {
+        TextPosition::AbovePhone => {
+            // Center text in the space above the phone
+            let space_above = phone.y;
+            if space_above > total_text_height {
+                ((space_above - total_text_height) / 2) as i32
+            } else {
+                padding as i32
+            }
+        }
+        TextPosition::BelowPhone => {
+            // Center text in the space below the phone
+            let phone_bottom = phone.y + phone.height;
+            let space_below = image_height.saturating_sub(phone_bottom);
+            if space_below > total_text_height {
+                (phone_bottom + (space_below - total_text_height) / 2) as i32
+            } else {
+                (phone_bottom + padding) as i32
+            }
+        }
+        TextPosition::Top => {
+            padding as i32
+        }
+        TextPosition::Bottom => {
+            (image_height.saturating_sub(total_text_height).saturating_sub(padding)) as i32
+        }
+    };
+
+    // Apply user's y_offset adjustment
+    let final_y = (base_y + copy.y_offset).max(0) as u32;
+
+    // Draw headline lines centered
+    let mut current_y = final_y;
+    for line in &headline_lines {
+        let line_width = measure_text_width(line, &headline_scaled);
+        let x = ((image_width as f32 - line_width) / 2.0).max(0.0) as i32;
+        draw_text_line(image, line, x, current_y as i32, &headline_scaled, color);
+        current_y += headline_line_height;
+    }
+
+    // Draw subheadline lines centered
+    if !subheadline_lines.is_empty() {
+        current_y += copy.line_gap;
+        let subheadline_font = get_font(copy.subheadline_weight)?;
+        let sub_scale = PxScale::from(copy.subheadline_size);
+        let sub_scaled = subheadline_font.as_scaled(sub_scale);
+        let sub_line_height = (sub_scaled.height() * 1.2).ceil() as u32;
+
+        for line in &subheadline_lines {
+            let line_width = measure_text_width(line, &sub_scaled);
+            let x = ((image_width as f32 - line_width) / 2.0).max(0.0) as i32;
+            draw_text_line(image, line, x, current_y as i32, &sub_scaled, color);
+            current_y += sub_line_height;
+        }
     }
 
     Ok(())

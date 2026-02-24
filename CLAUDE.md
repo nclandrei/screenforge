@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Screenforge is a Rust CLI tool for generating App Store-style marketing screenshots from YAML configuration. It captures screenshots (from files or iOS simulators), renders deterministic backgrounds, composites phone mockups with device frames, adds text overlays, and generates an HTML preview.
+Screenforge is a Rust CLI tool for generating App Store-style marketing screenshots. It captures screenshots (from files or iOS simulators), renders deterministic backgrounds, composites phone mockups with device frames, adds text overlays, and generates an HTML preview.
 
 ## Build & Run Commands
 

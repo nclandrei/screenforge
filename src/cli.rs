@@ -6,7 +6,7 @@ use clap::{Parser, Subcommand, ValueEnum};
 #[command(
     name = "screenforge",
     version,
-    about = "Generate App Store-style marketing screenshots from config"
+    about = "Generate App Store-style marketing screenshots"
 )]
 pub struct Cli {
     #[command(subcommand)]

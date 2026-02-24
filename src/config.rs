@@ -155,6 +155,20 @@ pub enum FontWeight {
     Bold,
 }
 
+#[derive(Debug, Deserialize, Clone, Copy, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum TextPosition {
+    /// Text centered above the phone mockup
+    #[default]
+    AbovePhone,
+    /// Text centered below the phone mockup
+    BelowPhone,
+    /// Text at top of canvas (with padding)
+    Top,
+    /// Text at bottom of canvas (with padding)
+    Bottom,
+}
+
 #[derive(Debug, Deserialize)]
 pub struct CopyConfig {
     pub headline: String,
@@ -162,10 +176,12 @@ pub struct CopyConfig {
     pub subheadline: String,
     #[serde(default = "default_copy_color")]
     pub color: String,
-    #[serde(default = "default_copy_x")]
-    pub x: u32,
-    #[serde(default = "default_copy_y")]
-    pub y: u32,
+    /// Vertical position preset (default: above_phone)
+    #[serde(default)]
+    pub position: TextPosition,
+    /// Vertical offset adjustment in pixels (positive = down, negative = up)
+    #[serde(default)]
+    pub y_offset: i32,
     /// Headline font size in pixels (default: 72)
     #[serde(default = "default_headline_size")]
     pub headline_size: f32,
@@ -228,14 +244,6 @@ fn default_shadow_alpha() -> u8 {
 
 fn default_copy_color() -> String {
     "#F4F8FF".to_string()
-}
-
-fn default_copy_x() -> u32 {
-    84
-}
-
-fn default_copy_y() -> u32 {
-    98
 }
 
 fn default_headline_size() -> f32 {

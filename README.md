@@ -1,6 +1,6 @@
 # Screenforge
 
-A Rust CLI for generating App Store-style marketing screenshots from YAML configuration.
+A Rust CLI for generating App Store-style marketing screenshots.
 
 ## Features
 
