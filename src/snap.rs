@@ -211,6 +211,8 @@ pub fn snap_framed(
             template: config.background_template,
             seed: config.background_seed,
             colors: config.background_colors.clone(),
+            auto_colors: false,
+            auto_strategy: Default::default(),
         },
         phone: PhoneConfig {
             model: phone_model,
