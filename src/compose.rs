@@ -68,18 +68,33 @@ pub fn compose_scene(
         );
     }
 
+    // When using overlay, Pro Max models need adjusted insets to match overlay geometry
+    let (inset_adjust_top, inset_adjust_side) = if overlay.is_some() {
+        use crate::config::PhoneModel;
+        match phone.model {
+            Some(PhoneModel::Iphone16ProMax) => (12, 6),
+            Some(PhoneModel::Iphone17ProMax) => (10, 5),
+            _ => (0, 0),
+        }
+    } else {
+        (0, 0)
+    };
+
     let inset_left = style
         .screen_padding
         .left
-        .saturating_add(style.frame_border_width);
+        .saturating_add(style.frame_border_width)
+        .saturating_sub(inset_adjust_side);
     let inset_right = style
         .screen_padding
         .right
-        .saturating_add(style.frame_border_width);
+        .saturating_add(style.frame_border_width)
+        .saturating_sub(inset_adjust_side);
     let inset_top = style
         .screen_padding
         .top
-        .saturating_add(style.frame_border_width);
+        .saturating_add(style.frame_border_width)
+        .saturating_sub(inset_adjust_top);
     let inset_bottom = style
         .screen_padding
         .bottom
@@ -110,8 +125,8 @@ pub fn compose_scene(
         let ratio = match phone.model {
             Some(PhoneModel::Iphone16Pro) => 0.16,
             Some(PhoneModel::Iphone17Pro) => 0.145,
-            Some(PhoneModel::Iphone16ProMax) => 0.155,
-            Some(PhoneModel::Iphone17ProMax) => 0.15,
+            Some(PhoneModel::Iphone16ProMax) => 0.16,
+            Some(PhoneModel::Iphone17ProMax) => 0.155,
             _ => 0.145,
         };
         (phone.width as f32 * ratio).round() as u32
