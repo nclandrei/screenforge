@@ -278,34 +278,6 @@ fn draw_copy(image: &mut RgbaImage, copy: &CopyConfig, phone: &PhoneConfig) -> R
     Ok(())
 }
 
-fn draw_text_wrapped(
-    image: &mut RgbaImage,
-    text: &str,
-    start_x: i32,
-    start_y: i32,
-    font_size: f32,
-    font: &FontRef,
-    color: Rgba<u8>,
-    max_width: u32,
-) -> u32 {
-    if max_width == 0 {
-        return 0;
-    }
-
-    let scale = PxScale::from(font_size);
-    let scaled_font = font.as_scaled(scale);
-    let line_height = (scaled_font.height() * 1.2).ceil() as u32;
-
-    let lines = wrap_text_by_width(text, &scaled_font, max_width as f32);
-
-    for (line_index, line) in lines.iter().enumerate() {
-        let y = start_y + (line_index as u32 * line_height) as i32;
-        draw_text_line(image, line, start_x, y, &scaled_font, color);
-    }
-
-    lines.len() as u32 * line_height
-}
-
 fn wrap_text_by_width<F: Font>(text: &str, font: &ab_glyph::PxScaleFont<&F>, max_width: f32) -> Vec<String> {
     let mut out = Vec::new();
 

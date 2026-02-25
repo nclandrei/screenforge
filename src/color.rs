@@ -28,11 +28,6 @@ impl Hsl {
         Self::new(self.h, (self.s * factor).clamp(0.0, 1.0), self.l)
     }
 
-    /// Adjust lightness by a factor (clamped 0-1)
-    pub fn adjust_lightness(self, factor: f32) -> Self {
-        Self::new(self.h, self.s, (self.l * factor).clamp(0.0, 1.0))
-    }
-
     /// Set lightness to a specific value
     pub fn with_lightness(self, l: f32) -> Self {
         Self::new(self.h, self.s, l)
