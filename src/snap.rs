@@ -1,3 +1,4 @@
+use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::thread;
@@ -14,6 +15,11 @@ use crate::config::{
 };
 use crate::palette::{extract_dominant_colors, generate_palette, PaletteStrategy};
 use crate::simulator::{find_booted_simulators, find_simulator};
+
+static FRAME_IPHONE_16_PRO: &[u8] = include_bytes!("../assets/frames/iphone_16_pro.png");
+static FRAME_IPHONE_16_PRO_MAX: &[u8] = include_bytes!("../assets/frames/iphone_16_pro_max.png");
+static FRAME_IPHONE_17_PRO: &[u8] = include_bytes!("../assets/frames/iphone_17_pro.png");
+static FRAME_IPHONE_17_PRO_MAX: &[u8] = include_bytes!("../assets/frames/iphone_17_pro_max.png");
 
 /// Configuration for a snap operation, loaded from YAML preset or CLI flags
 #[derive(Debug, Clone)]
@@ -205,6 +211,14 @@ pub fn snap_framed(
         config.background_colors.clone()
     };
 
+    // Resolve overlay path from user config or model defaults.
+    // When invoked from outside the repo, cwd-relative asset lookup can fail,
+    // so we search common roots and then fall back to embedded overlays.
+    let resolved_overlay = config
+        .overlay
+        .clone()
+        .or_else(|| phone_model.and_then(resolve_model_overlay));
+
     // Build scene config for compose
     let scene = SceneConfig {
         id: "snap".to_string(),
@@ -239,7 +253,7 @@ pub fn snap_framed(
             frame_border_width: 8,
             shadow_offset_y: 18,
             shadow_alpha: 74,
-            overlay: config.overlay.clone(),
+            overlay: resolved_overlay,
         },
         copy: build_copy_config(config),
     };
@@ -329,8 +343,8 @@ fn calculate_phone_layout(
 
     // Position in lower portion of canvas (leave room for headline)
     let phone_y = if config.headline.is_some() {
-        // Leave top 15% for text
-        (output_h as f32 * 0.15) as u32
+        // Leave top 20% for copy so composition feels less top-heavy.
+        (output_h as f32 * 0.20) as u32
     } else {
         // Center vertically with slight offset down
         (output_h - target_phone_height) / 2 + (output_h as f32 * 0.05) as u32
@@ -358,4 +372,74 @@ fn build_copy_config(config: &SnapConfig) -> Option<CopyConfig> {
         line_gap: 24,
         max_width: None,
     })
+}
+
+fn resolve_model_overlay(model: PhoneModel) -> Option<PathBuf> {
+    let model_slug = crate::frames::model_slug(model);
+    let filename = format!("{}.png", model_slug);
+
+    for root in overlay_search_roots() {
+        let candidate = root.join("assets").join("frames").join(&filename);
+        if candidate.exists() {
+            return Some(candidate);
+        }
+    }
+
+    materialize_embedded_overlay(model).ok()
+}
+
+fn overlay_search_roots() -> Vec<PathBuf> {
+    let mut roots = Vec::new();
+
+    if let Ok(cwd) = std::env::current_dir() {
+        roots.push(cwd);
+    }
+
+    if let Ok(exe) = std::env::current_exe() {
+        if let Some(exe_dir) = exe.parent() {
+            roots.push(exe_dir.to_path_buf());
+            for ancestor in exe_dir.ancestors().take(6) {
+                roots.push(ancestor.to_path_buf());
+            }
+
+            // Homebrew-style installs often place assets in <prefix>/share/screenforge.
+            if let Some(prefix) = exe_dir.parent() {
+                roots.push(prefix.join("share").join("screenforge"));
+            }
+        }
+    }
+
+    if let Ok(root) = std::env::var("SCREENFORGE_ROOT") {
+        roots.push(PathBuf::from(root));
+    }
+
+    let mut deduped = Vec::new();
+    for root in roots {
+        if !deduped.contains(&root) {
+            deduped.push(root);
+        }
+    }
+
+    deduped
+}
+
+fn materialize_embedded_overlay(model: PhoneModel) -> Result<PathBuf> {
+    let slug = crate::frames::model_slug(model);
+    let dest = std::env::temp_dir().join(format!("screenforge_overlay_{}.png", slug));
+
+    if !dest.exists() {
+        fs::write(&dest, embedded_overlay_bytes(model))
+            .with_context(|| format!("failed writing embedded overlay {}", dest.display()))?;
+    }
+
+    Ok(dest)
+}
+
+fn embedded_overlay_bytes(model: PhoneModel) -> &'static [u8] {
+    match model {
+        PhoneModel::Iphone16Pro => FRAME_IPHONE_16_PRO,
+        PhoneModel::Iphone16ProMax => FRAME_IPHONE_16_PRO_MAX,
+        PhoneModel::Iphone17Pro => FRAME_IPHONE_17_PRO,
+        PhoneModel::Iphone17ProMax => FRAME_IPHONE_17_PRO_MAX,
+    }
 }
