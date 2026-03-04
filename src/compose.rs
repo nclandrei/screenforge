@@ -117,7 +117,6 @@ pub fn compose_scene(
         let (inset_adjust_top, inset_adjust_side) = if overlay.is_some() {
             use crate::config::PhoneModel;
             match phone.model {
-                Some(PhoneModel::Iphone16ProMax) => (12, 6),
                 Some(PhoneModel::Iphone17ProMax) => (10, 5),
                 _ => (0, 0),
             }
@@ -168,9 +167,7 @@ pub fn compose_scene(
     let screenshot_radius = if overlay.is_some() {
         use crate::config::PhoneModel;
         let ratio = match phone.model {
-            Some(PhoneModel::Iphone16Pro) => 0.16,
             Some(PhoneModel::Iphone17Pro) => 0.145,
-            Some(PhoneModel::Iphone16ProMax) => 0.16,
             Some(PhoneModel::Iphone17ProMax) => 0.155,
             _ => 0.145,
         };

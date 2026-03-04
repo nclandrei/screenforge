@@ -37,7 +37,7 @@ open output/index.html
 Capture a framed screenshot from a running iOS simulator:
 
 ```bash
-screenforge snap "iPhone 16 Pro" --headline "Your App" --subheadline "Tagline here"
+screenforge snap "iPhone 17 Pro" --headline "Your App" --subheadline "Tagline here"
 ```
 
 List booted simulators:
@@ -61,7 +61,7 @@ screenforge run --config ./screenforge.yaml
 Capture and frame a screenshot from a running iOS simulator. Auto-detects device model.
 
 ```bash
-screenforge snap "iPhone 16 Pro"
+screenforge snap "iPhone 17 Pro"
 screenforge snap "My-Simulator" --output hero.png
 screenforge snap --raw                           # Raw screenshot without framing
 screenforge snap --auto-colors --auto-strategy analogous
@@ -90,8 +90,6 @@ screenforge devices
 ```
 
 Supported models:
-- `iphone_16_pro`
-- `iphone_16_pro_max`
 - `iphone_17_pro`
 - `iphone_17_pro_max`
 
@@ -153,7 +151,7 @@ scenes:
         - "#2B8CD6"
         - "#A9E7FF"
     phone:
-      model: iphone_16_pro
+      model: iphone_17_pro
       x: 170
       y: 430
       width: 950
@@ -236,7 +234,7 @@ Color strategies:
 
 ```yaml
 phone:
-  model: iphone_16_pro       # optional, enables preset styling
+  model: iphone_17_pro       # optional, enables preset styling
   x: 170                     # horizontal position
   y: 430                     # vertical position
   width: 950                 # phone width

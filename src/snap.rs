@@ -16,8 +16,6 @@ use crate::config::{
 use crate::palette::{PaletteStrategy, extract_dominant_colors, generate_palette};
 use crate::simulator::{find_booted_simulators, find_simulator};
 
-static FRAME_IPHONE_16_PRO: &[u8] = include_bytes!("../assets/frames/iphone_16_pro.png");
-static FRAME_IPHONE_16_PRO_MAX: &[u8] = include_bytes!("../assets/frames/iphone_16_pro_max.png");
 static FRAME_IPHONE_17_PRO: &[u8] = include_bytes!("../assets/frames/iphone_17_pro.png");
 static FRAME_IPHONE_17_PRO_MAX: &[u8] = include_bytes!("../assets/frames/iphone_17_pro_max.png");
 
@@ -447,8 +445,6 @@ fn materialize_embedded_overlay(model: PhoneModel) -> Result<PathBuf> {
 
 fn embedded_overlay_bytes(model: PhoneModel) -> &'static [u8] {
     match model {
-        PhoneModel::Iphone16Pro => FRAME_IPHONE_16_PRO,
-        PhoneModel::Iphone16ProMax => FRAME_IPHONE_16_PRO_MAX,
         PhoneModel::Iphone17Pro => FRAME_IPHONE_17_PRO,
         PhoneModel::Iphone17ProMax => FRAME_IPHONE_17_PRO_MAX,
     }

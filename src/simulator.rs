@@ -169,20 +169,12 @@ pub fn find_booted_simulators() -> Result<Vec<Simulator>> {
 
 /// Map device type identifier to PhoneModel
 fn detect_phone_model(device_type: &str) -> Option<PhoneModel> {
-    // device_type looks like: com.apple.CoreSimulator.SimDeviceType.iPhone-16-Pro
+    // device_type looks like: com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro
     let suffix = device_type.rsplit('.').next()?;
 
     match suffix {
-        "iPhone-16-Pro" => Some(PhoneModel::Iphone16Pro),
-        "iPhone-16-Pro-Max" => Some(PhoneModel::Iphone16ProMax),
         "iPhone-17-Pro" => Some(PhoneModel::Iphone17Pro),
         "iPhone-17-Pro-Max" => Some(PhoneModel::Iphone17ProMax),
-        // Map older devices to closest model for reasonable defaults
-        "iPhone-15-Pro" => Some(PhoneModel::Iphone16Pro),
-        "iPhone-15-Pro-Max" => Some(PhoneModel::Iphone16ProMax),
-        "iPhone-15" | "iPhone-15-Plus" => Some(PhoneModel::Iphone16Pro),
-        "iPhone-14-Pro" => Some(PhoneModel::Iphone16Pro),
-        "iPhone-14-Pro-Max" => Some(PhoneModel::Iphone16ProMax),
         _ => None,
     }
 }
@@ -194,16 +186,16 @@ mod tests {
     #[test]
     fn test_detect_phone_model() {
         assert_eq!(
-            detect_phone_model("com.apple.CoreSimulator.SimDeviceType.iPhone-16-Pro"),
-            Some(PhoneModel::Iphone16Pro)
+            detect_phone_model("com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro"),
+            Some(PhoneModel::Iphone17Pro)
         );
         assert_eq!(
-            detect_phone_model("com.apple.CoreSimulator.SimDeviceType.iPhone-16-Pro-Max"),
-            Some(PhoneModel::Iphone16ProMax)
+            detect_phone_model("com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro-Max"),
+            Some(PhoneModel::Iphone17ProMax)
         );
         assert_eq!(
             detect_phone_model("com.apple.CoreSimulator.SimDeviceType.iPhone-15-Pro"),
-            Some(PhoneModel::Iphone16Pro)
+            None
         );
         assert_eq!(
             detect_phone_model("com.apple.CoreSimulator.SimDeviceType.Apple-Watch-Series-7-45mm"),

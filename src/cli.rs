@@ -50,7 +50,7 @@ pub enum Commands {
     /// model, and renders a framed App Store-style image.
     ///
     /// Examples:
-    ///   screenforge snap "iPhone 16 Pro"
+    ///   screenforge snap "iPhone 17 Pro"
     ///   screenforge snap "My-Custom-Simulator" --output hero.png
     ///   screenforge snap 864E85BD-BAAF-4BB3-9D02-3D9FD0C34D4A --raw
     ///   screenforge snap --list
@@ -153,8 +153,6 @@ pub enum OutputFormat {
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
 pub enum PhoneModelArg {
-    Iphone16Pro,
-    Iphone16ProMax,
     Iphone17Pro,
     Iphone17ProMax,
 }
@@ -162,8 +160,6 @@ pub enum PhoneModelArg {
 impl From<PhoneModelArg> for crate::config::PhoneModel {
     fn from(arg: PhoneModelArg) -> Self {
         match arg {
-            PhoneModelArg::Iphone16Pro => Self::Iphone16Pro,
-            PhoneModelArg::Iphone16ProMax => Self::Iphone16ProMax,
             PhoneModelArg::Iphone17Pro => Self::Iphone17Pro,
             PhoneModelArg::Iphone17ProMax => Self::Iphone17ProMax,
         }

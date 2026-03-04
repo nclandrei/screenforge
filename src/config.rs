@@ -34,10 +34,6 @@ pub struct SceneConfig {
 
 #[derive(Debug, Deserialize, Serialize, Clone, Copy, PartialEq)]
 pub enum PhoneModel {
-    #[serde(rename = "iphone_16_pro")]
-    Iphone16Pro,
-    #[serde(rename = "iphone_16_pro_max")]
-    Iphone16ProMax,
     #[serde(rename = "iphone_17_pro")]
     Iphone17Pro,
     #[serde(rename = "iphone_17_pro_max")]

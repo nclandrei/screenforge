@@ -20,7 +20,7 @@ cargo test
 cargo run -- run --config ./screenforge.yaml
 
 # Quick snap from running simulator
-cargo run -- snap "iPhone 16 Pro"
+cargo run -- snap "iPhone 17 Pro"
 cargo run -- snap --list  # List booted simulators
 
 # List built-in device models
@@ -52,7 +52,7 @@ src/
 ├── capture.rs     # Screenshot adapters: File (load image) or Simctl (xcrun simctl io)
 ├── background.rs  # Deterministic background rendering (mesh/stripes patterns with ChaCha8Rng seeding)
 ├── compose.rs     # Image composition: combines screenshot + background + frame + text
-├── devices.rs     # Built-in device presets (iPhone 16/17 Pro/Pro Max dimensions, corners, padding)
+├── devices.rs     # Built-in device presets (iPhone 17 Pro/Pro Max dimensions, corners, padding)
 ├── frames.rs      # Transparent PNG overlay loading, import, validation
 ├── snap.rs        # Quick capture command wrapper
 ├── simulator.rs   # iOS simulator interaction (xcrun simctl queries)

@@ -459,8 +459,6 @@ pub fn resolve_overlay_for_verify(
 
 pub fn model_slug(model: PhoneModel) -> &'static str {
     match model {
-        PhoneModel::Iphone16Pro => "iphone_16_pro",
-        PhoneModel::Iphone16ProMax => "iphone_16_pro_max",
         PhoneModel::Iphone17Pro => "iphone_17_pro",
         PhoneModel::Iphone17ProMax => "iphone_17_pro_max",
     }
@@ -550,14 +548,14 @@ mod tests {
         let destination = temp.path().join("destination");
         fs::create_dir_all(&source).expect("create source");
 
-        write_png(&source.join("iPhone 16 Pro.png"), 20, 30, true);
+        write_png(&source.join("iPhone 17 Pro.png"), 20, 30, true);
         write_png(&source.join("Opaque.png"), 20, 30, false);
         fs::write(source.join("readme.txt"), "x").expect("write txt");
 
         let summary = import_frames(&source, &destination, false).expect("import frames");
         assert_eq!(summary.imported, 1);
         assert_eq!(summary.skipped, 2);
-        assert!(destination.join("iphone_16_pro.png").exists());
+        assert!(destination.join("iphone_17_pro.png").exists());
         assert!(!destination.join("opaque.png").exists());
     }
 
@@ -618,7 +616,7 @@ scenes:
       height: 2796
     background: {}
     phone:
-      model: iphone_16_pro
+      model: iphone_17_pro
       x: 10
       y: 10
       width: 100

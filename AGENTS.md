@@ -19,7 +19,7 @@ Screenforge is a Rust CLI for generating App Store-style App Store marketing scr
 Run commands through Cargo in development:
 
 - Full pipeline: `cargo run -- run --config ./screenforge.yaml`
-- Quick simulator capture: `cargo run -- snap "iPhone 16 Pro"`
+- Quick simulator capture: `cargo run -- snap "iPhone 17 Pro"`
 - List booted simulators: `cargo run -- snap --list`
 - List device presets: `cargo run -- devices`
 - Validate overlays: `cargo run -- verify-overlay --config ./screenforge.yaml --strict`
@@ -63,7 +63,7 @@ Subcommand help:
   - `--raw`
   - `-l, --list`
   - `--format <FORMAT>` (default: `text`; values: `text|json`)
-  - `--model <MODEL>` (values: `iphone16-pro|iphone16-pro-max|iphone17-pro|iphone17-pro-max`)
+  - `--model <MODEL>` (values: `iphone17-pro|iphone17-pro-max`)
   - `--settle-ms <SETTLE_MS>` (default: `500`)
   - `--width <WIDTH>` (default: `1290`)
   - `--height <HEIGHT>` (default: `2796`)

@@ -18,14 +18,14 @@ scenes:
         - "#2B8CD6"
         - "#A9E7FF"
     phone:
-      model: iphone_16_pro
+      model: iphone_17_pro
       x: 170
       y: 430
       width: 950
       height: 1980
       # Optional explicit path. If omitted, Screenforge tries:
-      # ./assets/frames/iphone_16_pro.png
-      # overlay: ./assets/frames/iphone_16_pro.png
+      # ./assets/frames/iphone_17_pro.png
+      # overlay: ./assets/frames/iphone_17_pro.png
     copy:
       headline: "BUILD FOCUS FAST"
       subheadline: "One clean flow for capture, layout, and export."
@@ -85,7 +85,7 @@ scenes:
       auto_colors: true
       auto_strategy: monochromatic
     phone:
-      model: iphone_16_pro
+      model: iphone_17_pro
       x: 170
       y: 430
       width: 950
@@ -114,7 +114,7 @@ scenes:
       auto_colors: true
       auto_strategy: analogous
     phone:
-      model: iphone_16_pro
+      model: iphone_17_pro
       x: 170
       y: 430
       width: 950
@@ -143,7 +143,7 @@ scenes:
       auto_colors: true
       auto_strategy: complementary
     phone:
-      model: iphone_16_pro
+      model: iphone_17_pro
       x: 170
       y: 430
       width: 950
@@ -172,7 +172,7 @@ scenes:
       auto_colors: true
       auto_strategy: triadic
     phone:
-      model: iphone_16_pro
+      model: iphone_17_pro
       x: 170
       y: 430
       width: 950
@@ -205,13 +205,13 @@ scenes:
         - "#0f3460"
         - "#e94560"
     phone:
-      model: iphone_16_pro
+      model: iphone_17_pro
       x: 170
       y: 430
       width: 950
       height: 1980
     copy:
-      headline: "iPhone 16 Pro"
+      headline: "iPhone 17 Pro"
       subheadline: "Testing frame overlay alignment"
       color: "#FFFFFF"
       x: 86
@@ -237,13 +237,13 @@ scenes:
         - "#c72c41"
         - "#ee4540"
     phone:
-      model: iphone_16_pro_max
+      model: iphone_17_pro_max
       x: 170
       y: 430
       width: 950
       height: 1980
     copy:
-      headline: "iPhone 16 Pro Max"
+      headline: "iPhone 17 Pro Max"
       subheadline: "Testing frame overlay alignment"
       color: "#FFFFFF"
       x: 86

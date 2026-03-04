@@ -45,15 +45,7 @@ pub struct DeviceListing {
     pub display_name: &'static str,
 }
 
-pub const DEVICE_LISTINGS: [DeviceListing; 4] = [
-    DeviceListing {
-        slug: "iphone_16_pro",
-        display_name: "iPhone 16 Pro",
-    },
-    DeviceListing {
-        slug: "iphone_16_pro_max",
-        display_name: "iPhone 16 Pro Max",
-    },
+pub const DEVICE_LISTINGS: [DeviceListing; 2] = [
     DeviceListing {
         slug: "iphone_17_pro",
         display_name: "iPhone 17 Pro",
@@ -109,44 +101,6 @@ pub fn resolve_phone_style(phone: &PhoneConfig) -> ResolvedPhoneStyle {
 
 fn profile_for(model: PhoneModel) -> DeviceProfile {
     match model {
-        PhoneModel::Iphone16Pro => DeviceProfile {
-            corner_radius: 116,
-            screen_padding: Insets {
-                top: 54,
-                right: 28,
-                bottom: 40,
-                left: 28,
-            },
-            frame_color: "#7A7F89",
-            frame_border_width: 13,
-            shadow_offset_y: 24,
-            shadow_alpha: 82,
-            island: Some(DynamicIslandSpec {
-                width_ratio: 0.33,
-                height_ratio: 0.050,
-                y_offset_ratio: 0.020,
-                lens_size_ratio: 0.38,
-            }),
-        },
-        PhoneModel::Iphone16ProMax => DeviceProfile {
-            corner_radius: 126,
-            screen_padding: Insets {
-                top: 54,
-                right: 28,
-                bottom: 40,
-                left: 28,
-            },
-            frame_color: "#767C86",
-            frame_border_width: 13,
-            shadow_offset_y: 25,
-            shadow_alpha: 83,
-            island: Some(DynamicIslandSpec {
-                width_ratio: 0.30,
-                height_ratio: 0.047,
-                y_offset_ratio: 0.020,
-                lens_size_ratio: 0.37,
-            }),
-        },
         PhoneModel::Iphone17Pro => DeviceProfile {
             corner_radius: 122,
             screen_padding: Insets {

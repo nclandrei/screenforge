@@ -102,7 +102,7 @@ fn main() -> Result<()> {
                         if booted.is_empty() {
                             println!("No simulators are currently booted.");
                             println!("\nBoot a simulator with:");
-                            println!("  xcrun simctl boot \"iPhone 16 Pro\"");
+                            println!("  xcrun simctl boot \"iPhone 17 Pro\"");
                         } else {
                             println!("Booted simulators:");
                             for sim in &booted {
@@ -134,7 +134,7 @@ fn main() -> Result<()> {
                                 println!("No simulators are currently booted.");
                                 println!("\nUsage: screenforge snap <SIMULATOR> [--output <PATH>]");
                                 println!("\nBoot a simulator first:");
-                                println!("  xcrun simctl boot \"iPhone 16 Pro\"");
+                                println!("  xcrun simctl boot \"iPhone 17 Pro\"");
                             } else {
                                 println!("Booted simulators:");
                                 for sim in &booted {
