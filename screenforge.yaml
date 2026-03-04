@@ -7,8 +7,8 @@ scenes:
       path: ./examples/input/demo.ppm
     output:
       filename: 01-demo-mesh.png
-      width: 1290
-      height: 2796
+      width: 1284
+      height: 2778
     background:
       template: mesh
       seed: 42
@@ -42,8 +42,8 @@ scenes:
       path: ./examples/input/demo.ppm
     output:
       filename: 02-demo-stripes.png
-      width: 1290
-      height: 2796
+      width: 1284
+      height: 2778
     background:
       template: stripes
       seed: 99
@@ -77,8 +77,8 @@ scenes:
       path: ./examples/input/demo.ppm
     output:
       filename: 03-auto-mono.png
-      width: 1290
-      height: 2796
+      width: 1284
+      height: 2778
     background:
       template: mesh
       seed: 42
@@ -106,8 +106,8 @@ scenes:
       path: ./examples/input/demo.ppm
     output:
       filename: 04-auto-analogous.png
-      width: 1290
-      height: 2796
+      width: 1284
+      height: 2778
     background:
       template: mesh
       seed: 55
@@ -135,8 +135,8 @@ scenes:
       path: ./examples/input/demo.ppm
     output:
       filename: 05-auto-complement.png
-      width: 1290
-      height: 2796
+      width: 1284
+      height: 2778
     background:
       template: mesh
       seed: 77
@@ -164,8 +164,8 @@ scenes:
       path: ./examples/input/demo.ppm
     output:
       filename: 06-auto-triadic.png
-      width: 1290
-      height: 2796
+      width: 1284
+      height: 2778
     background:
       template: mesh
       seed: 88
@@ -194,8 +194,8 @@ scenes:
       path: ./examples/input/demo.ppm
     output:
       filename: 07-frame-16-pro.png
-      width: 1290
-      height: 2796
+      width: 1284
+      height: 2778
     background:
       template: mesh
       seed: 100
@@ -226,8 +226,8 @@ scenes:
       path: ./examples/input/demo.ppm
     output:
       filename: 08-frame-16-pro-max.png
-      width: 1290
-      height: 2796
+      width: 1284
+      height: 2778
     background:
       template: mesh
       seed: 101
@@ -258,8 +258,8 @@ scenes:
       path: ./examples/input/demo.ppm
     output:
       filename: 09-frame-17-pro.png
-      width: 1290
-      height: 2796
+      width: 1284
+      height: 2778
     background:
       template: mesh
       seed: 102
@@ -290,8 +290,8 @@ scenes:
       path: ./examples/input/demo.ppm
     output:
       filename: 10-frame-17-pro-max.png
-      width: 1290
-      height: 2796
+      width: 1284
+      height: 2778
     background:
       template: mesh
       seed: 103

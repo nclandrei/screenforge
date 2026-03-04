@@ -22,7 +22,7 @@ static FRAME_IPHONE_17_PRO_MAX: &[u8] = include_bytes!("../assets/frames/iphone_
 /// Configuration for a snap operation, loaded from YAML preset or CLI flags
 #[derive(Debug, Clone)]
 pub struct SnapConfig {
-    /// Output dimensions (default: App Store 6.7" = 1290x2796)
+    /// Output dimensions (default: App Store 6.5/6.7" = 1284x2778)
     pub width: u32,
     pub height: u32,
 
@@ -53,9 +53,9 @@ pub struct SnapConfig {
 impl Default for SnapConfig {
     fn default() -> Self {
         Self {
-            // App Store 6.7" display size
-            width: 1290,
-            height: 2796,
+            // App Store iPhone screenshot slot size (accepted for 6.5"/6.7")
+            width: 1284,
+            height: 2778,
             phone_x: None,
             phone_y: None,
             phone_width: None,

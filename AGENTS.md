@@ -65,8 +65,8 @@ Subcommand help:
   - `--format <FORMAT>` (default: `text`; values: `text|json`)
   - `--model <MODEL>` (values: `iphone17-pro|iphone17-pro-max`)
   - `--settle-ms <SETTLE_MS>` (default: `500`)
-  - `--width <WIDTH>` (default: `1290`)
-  - `--height <HEIGHT>` (default: `2796`)
+  - `--width <WIDTH>` (default: `1284`)
+  - `--height <HEIGHT>` (default: `2778`)
   - `--headline <HEADLINE>`
   - `--subheadline <SUBHEADLINE>`
   - `--background <BACKGROUND>` (default: `mesh`; values: `mesh|stripes`)

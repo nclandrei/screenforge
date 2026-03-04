@@ -85,11 +85,11 @@ pub enum Commands {
         settle_ms: u64,
 
         /// Output canvas width
-        #[arg(long, default_value_t = 1290)]
+        #[arg(long, default_value_t = 1284)]
         width: u32,
 
         /// Output canvas height
-        #[arg(long, default_value_t = 2796)]
+        #[arg(long, default_value_t = 2778)]
         height: u32,
 
         /// Headline text to render above phone

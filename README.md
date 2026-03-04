@@ -140,8 +140,8 @@ scenes:
       path: ./screenshots/home.png
     output:
       filename: 01-home.png
-      width: 1290
-      height: 2796
+      width: 1284
+      height: 2778
     background:
       template: mesh
       seed: 42

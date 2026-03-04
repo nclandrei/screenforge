@@ -575,8 +575,8 @@ scenes:
       path: ./raw.png
     output:
       filename: out.png
-      width: 1290
-      height: 2796
+      width: 1284
+      height: 2778
     background: {{}}
     phone:
       x: 10
@@ -612,8 +612,8 @@ scenes:
       path: ./raw.png
     output:
       filename: out.png
-      width: 1290
-      height: 2796
+      width: 1284
+      height: 2778
     background: {}
     phone:
       model: iphone_17_pro
@@ -652,8 +652,8 @@ scenes:
       path: ./raw.png
     output:
       filename: out.png
-      width: 1290
-      height: 2796
+      width: 1284
+      height: 2778
     background: {}
     phone:
       model: iphone_17_pro
