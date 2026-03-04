@@ -13,7 +13,7 @@ use crate::config::{
     BackgroundConfig, BackgroundTemplate, CaptureConfig, CopyConfig, Insets, OutputConfig,
     PhoneConfig, PhoneModel, SceneConfig,
 };
-use crate::palette::{extract_dominant_colors, generate_palette, PaletteStrategy};
+use crate::palette::{PaletteStrategy, extract_dominant_colors, generate_palette};
 use crate::simulator::{find_booted_simulators, find_simulator};
 
 static FRAME_IPHONE_16_PRO: &[u8] = include_bytes!("../assets/frames/iphone_16_pro.png");
@@ -199,9 +199,28 @@ pub fn snap_framed(
     let raw_img = image::open(&raw_path)
         .with_context(|| format!("failed to open raw screenshot {}", raw_path.display()))?;
 
-    // Calculate phone dimensions based on output size
+    // Resolve overlay path from user config or model defaults.
+    // When invoked from outside the repo, cwd-relative asset lookup can fail,
+    // so we search common roots and then fall back to embedded overlays.
+    let resolved_overlay = config
+        .overlay
+        .clone()
+        .or_else(|| phone_model.and_then(resolve_model_overlay));
+
+    // Calculate phone dimensions based on output size.
+    // If we have an overlay, preserve its aspect ratio so the frame is not distorted.
+    let overlay_aspect = resolved_overlay
+        .as_ref()
+        .and_then(|path| image::image_dimensions(path).ok())
+        .and_then(|(w, h)| {
+            if w == 0 || h == 0 {
+                None
+            } else {
+                Some(h as f32 / w as f32)
+            }
+        });
     let (phone_width, phone_height, phone_x, phone_y) =
-        calculate_phone_layout(config, &raw_img);
+        calculate_phone_layout(config, &raw_img, overlay_aspect);
 
     // Determine background colors (auto-extract or use provided)
     let background_colors = if config.auto_colors {
@@ -210,14 +229,6 @@ pub fn snap_framed(
     } else {
         config.background_colors.clone()
     };
-
-    // Resolve overlay path from user config or model defaults.
-    // When invoked from outside the repo, cwd-relative asset lookup can fail,
-    // so we search common roots and then fall back to embedded overlays.
-    let resolved_overlay = config
-        .overlay
-        .clone()
-        .or_else(|| phone_model.and_then(resolve_model_overlay));
 
     // Build scene config for compose
     let scene = SceneConfig {
@@ -317,6 +328,7 @@ pub fn list_booted() -> Result<Vec<SimulatorInfo>> {
 fn calculate_phone_layout(
     config: &SnapConfig,
     raw_img: &image::DynamicImage,
+    overlay_aspect: Option<f32>,
 ) -> (u32, u32, u32, u32) {
     // Use explicit config if provided
     if let (Some(w), Some(h), Some(x), Some(y)) = (
@@ -330,12 +342,10 @@ fn calculate_phone_layout(
 
     let output_w = config.width;
     let output_h = config.height;
-    let raw_w = raw_img.width();
-    let raw_h = raw_img.height();
-
     // Calculate phone size to fill ~73% of output width, maintaining aspect ratio
     let target_phone_width = (output_w as f32 * 0.73) as u32;
-    let aspect_ratio = raw_h as f32 / raw_w as f32;
+    let aspect_ratio =
+        overlay_aspect.unwrap_or_else(|| raw_img.height() as f32 / raw_img.width() as f32);
     let target_phone_height = (target_phone_width as f32 * aspect_ratio) as u32;
 
     // Center horizontally
