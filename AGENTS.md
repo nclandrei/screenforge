@@ -28,12 +28,52 @@ Run commands through Cargo in development:
 
 Equivalent installed CLI commands are available as `screenforge <command>`.
 
-## Current Snap CLI Behavior
+## CLI Help And Flags
 
-The `snap` command supports auto-generated palettes from the captured screenshot:
+Top-level help:
 
-- `--auto-colors`
-- `--auto-strategy monochromatic|analogous|complementary|triadic`
+- `screenforge --help`
+- `screenforge --version`
+- Usage: `screenforge <COMMAND>`
+- Commands: `run`, `devices`, `import-frames`, `verify-overlay`, `snap`, `convert-frames`, `help`
+- Global flags:
+  - `-h, --help`
+  - `-V, --version`
+
+Subcommand help:
+
+- `screenforge run --help`
+  - `-c, --config <CONFIG>` (default: `screenforge.yaml`)
+- `screenforge devices --help` (no extra flags)
+- `screenforge import-frames --help`
+  - `-s, --source <SOURCE>` (required)
+  - `--dest <DEST>` (default: `assets/frames`)
+  - `--overwrite`
+- `screenforge verify-overlay --help`
+  - `-c, --config <CONFIG>` (default: `screenforge.yaml`)
+  - `--strict`
+- `screenforge convert-frames --help`
+  - `-s, --source <SOURCE>` (required)
+  - `--dest <DEST>` (default: `assets/frames`)
+  - `--overwrite`
+  - `--white-threshold <WHITE_THRESHOLD>` (default: `250`)
+- `screenforge snap --help`
+  - Positional: `[SIMULATOR]` (name, partial name, or UDID)
+  - `-o, --output <OUTPUT>` (default: `snap_output.png`)
+  - `--raw`
+  - `-l, --list`
+  - `--format <FORMAT>` (default: `text`; values: `text|json`)
+  - `--model <MODEL>` (values: `iphone16-pro|iphone16-pro-max|iphone17-pro|iphone17-pro-max`)
+  - `--settle-ms <SETTLE_MS>` (default: `500`)
+  - `--width <WIDTH>` (default: `1290`)
+  - `--height <HEIGHT>` (default: `2796`)
+  - `--headline <HEADLINE>`
+  - `--subheadline <SUBHEADLINE>`
+  - `--background <BACKGROUND>` (default: `mesh`; values: `mesh|stripes`)
+  - `--seed <SEED>` (default: `42`)
+  - `--colors <COLORS>` (comma-separated hex colors)
+  - `--auto-colors`
+  - `--auto-strategy <AUTO_STRATEGY>` (default: `analogous`; values: `monochromatic|analogous|complementary|triadic`)
 
 ## Verification Workflow
 
