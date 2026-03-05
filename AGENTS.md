@@ -75,6 +75,8 @@ Subcommand help:
   - `--auto-colors`
   - `--auto-strategy <AUTO_STRATEGY>` (default: `analogous`; values: `monochromatic|analogous|complementary|triadic`)
 
+Model support is limited to iPhone 17 Pro and iPhone 17 Pro Max. Older models are not supported.
+
 ## Verification Workflow
 
 - Run a pipeline config and inspect generated output:

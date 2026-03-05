@@ -93,6 +93,8 @@ Supported models:
 - `iphone_17_pro`
 - `iphone_17_pro_max`
 
+Older models (for example iPhone 16 and earlier) are not supported.
+
 ### import-frames
 
 Import transparent PNG frame overlays into `assets/frames`.
