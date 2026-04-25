@@ -1,0 +1,197 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: actions/cache@v5
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-release-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-release-
+
+      - name: Determine release state
+        id: release
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+
+          release_version="$(awk -F' *= *' '/^version = /{gsub(/"/,"",$2); print $2; exit}' Cargo.toml)"
+          if [ -z "$release_version" ]; then
+            echo "::error::Could not parse version from Cargo.toml"
+            exit 1
+          fi
+          release_tag="v${release_version}"
+          head_commit="$(git rev-parse HEAD)"
+
+          release_exists=false
+          release_is_draft=false
+          if gh release view "$release_tag" --json isDraft >/tmp/release.json 2>/dev/null; then
+            release_exists=true
+            release_is_draft="$(jq -r '.isDraft' /tmp/release.json)"
+          fi
+
+          tag_exists=false
+          tag_commit=""
+          if git rev-parse "$release_tag" >/dev/null 2>&1; then
+            tag_exists=true
+            tag_commit="$(git rev-list -n 1 "$release_tag")"
+          fi
+
+          release_needed=true
+          if [ "$EVENT_NAME" != "workflow_dispatch" ] && [ "$release_exists" = true ] && [ "$release_is_draft" = false ]; then
+            echo "::notice::Release ${release_tag} is already published; skipping."
+            release_needed=false
+          elif [ "$EVENT_NAME" != "workflow_dispatch" ] && [ "$tag_exists" = true ] && [ "$tag_commit" != "$head_commit" ]; then
+            echo "::notice::Version ${release_version} is tagged on a different commit. Bump Cargo.toml before the next automatic release."
+            release_needed=false
+          fi
+
+          {
+            echo "release_needed=${release_needed}"
+            echo "release_tag=${release_tag}"
+            echo "release_version=${release_version}"
+            echo "tag_exists=${tag_exists}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Build and test
+        if: steps.release.outputs.release_needed == 'true'
+        run: |
+          set -euo pipefail
+          cargo build --release
+          cargo test
+
+      - name: Create and push release tag
+        if: steps.release.outputs.release_needed == 'true' && steps.release.outputs.tag_exists != 'true'
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag "${{ steps.release.outputs.release_tag }}"
+          git push origin "refs/tags/${{ steps.release.outputs.release_tag }}"
+
+      - name: Compute source tarball SHA256
+        if: steps.release.outputs.release_needed == 'true'
+        id: tarball
+        run: |
+          set -euo pipefail
+          tag="${{ steps.release.outputs.release_tag }}"
+          url="https://github.com/${{ github.repository }}/archive/refs/tags/${tag}.tar.gz"
+
+          for attempt in 1 2 3 4 5; do
+            if curl -fsSL -o /tmp/source.tar.gz "$url"; then
+              break
+            fi
+            echo "tarball not yet available (attempt $attempt), retrying..."
+            sleep 5
+          done
+
+          sha="$(sha256sum /tmp/source.tar.gz | awk '{print $1}')"
+          {
+            echo "sha256=${sha}"
+            echo "url=${url}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Render Homebrew formula
+        if: steps.release.outputs.release_needed == 'true'
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          cat > dist/screenforge.rb <<EOF
+          class Screenforge < Formula
+            desc "CLI tool for generating App Store-style marketing screenshots"
+            homepage "https://github.com/${{ github.repository }}"
+            url "${{ steps.tarball.outputs.url }}"
+            version "${{ steps.release.outputs.release_version }}"
+            sha256 "${{ steps.tarball.outputs.sha256 }}"
+            license "MIT"
+
+            depends_on "rust" => :build
+
+            def install
+              system "cargo", "install", *std_cargo_args
+            end
+
+            test do
+              assert_match "screenforge", shell_output("#{bin}/screenforge --help")
+            end
+          end
+          EOF
+
+      - name: Ensure Homebrew tap token is configured
+        if: steps.release.outputs.release_needed == 'true'
+        env:
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          if [ -z "${HOMEBREW_TAP_TOKEN}" ]; then
+            echo "::error::Missing HOMEBREW_TAP_TOKEN secret."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v5
+        if: steps.release.outputs.release_needed == 'true'
+        with:
+          persist-credentials: true
+          repository: nclandrei/homebrew-tap
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          path: homebrew-tap
+
+      - name: Publish Homebrew formula
+        if: steps.release.outputs.release_needed == 'true'
+        working-directory: homebrew-tap
+        env:
+          GITHUB_EMAIL: actions@users.noreply.github.com
+          GITHUB_USER: screenforge bot
+        run: |
+          set -euo pipefail
+          cp ../dist/screenforge.rb Formula/screenforge.rb
+
+          git config user.name "${GITHUB_USER}"
+          git config user.email "${GITHUB_EMAIL}"
+
+          git add Formula/screenforge.rb
+          if git diff --cached --quiet; then
+            echo "No Homebrew formula changes to publish."
+            exit 0
+          fi
+
+          git commit -m "screenforge ${{ steps.release.outputs.release_version }}"
+          git push
+
+      - name: Create or update GitHub release
+        if: steps.release.outputs.release_needed == 'true'
+        run: |
+          set -euo pipefail
+          tag="${{ steps.release.outputs.release_tag }}"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release edit "$tag" --draft=false
+          else
+            gh release create "$tag" --verify-tag --generate-notes \
+              --title "screenforge ${{ steps.release.outputs.release_version }}"
+          fi
